@@ -1,0 +1,27 @@
+v13.3 — Novidades da linha 13
+• Backup automático na atualização: ao gravar pelo cabo, seus presets,
+  imagens, ícones e aparelhos personalizados são salvos antes e devolvidos
+  ao pedal depois.
+• Assistente de Configuração: monta um preset inteiro passo a passo, sem
+  precisar entender MIDI.
+• Novo comportamento STEPS: cada toque avança um passo de uma sequência,
+  com figura rítmica por passo e opção de seguir o TAP TEMPO ou um BPM fixo.
+• Novo comportamento CONTROL: um toque alterna entre FX 1 e FX 2 — quem
+  entra liga, quem sai desliga.
+• Chamada de presets configurável: você escolhe o que cada footswitch faz
+  no toque curto e no toque longo (chamar preset, trocar banco, entrar em
+  LIVE e mais).
+• Combos: dois footswitches pisados juntos executam uma ação à sua escolha,
+  em 9 pares disponíveis.
+• Layout de tela por preset: cada preset pode ter o seu, sem mexer no global.
+• Tamanho da fonte do nome ajustável por footswitch.
+• Prévia do editor agora mostra o tile exatamente como sai no display.
+• Anel único no STOMP: os 3 LEDs acendem juntos na cor da última seção usada.
+• Pedal de expressão por preset: cada preset pode mandar o pedal para um
+  comando diferente.
+• Card DISPARO MIDI: dispara um CC ou PC na mão para descobrir a que o seu
+  processador responde.
+• Backup por banco: salva ou restaura os 6 presets de uma letra, com as
+  imagens e ícones que ela usa.
+• Valores de ligado/desligado ajustáveis por canal.
+• Correções de estabilidade e ajustes visuais no editor.

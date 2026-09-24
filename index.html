@@ -1,0 +1,1293 @@
+<!doctype html>
+<html lang="pt-BR" data-state="idle">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Atualizador BFMiDi V14</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #04060e;
+      --txt: #eaf0ff;
+      --txt-soft: #93a0c4;
+      --txt-faint: #5d6889;
+      --cyan: #22d3ee;
+      --blue: #3b82f6;
+      --orange: #ff7a2f;
+      --green: #2bdc9a;
+      --red: #ff6a52;
+      --glass: rgba(18, 24, 44, 0.55);
+      --glass-line: rgba(140, 165, 230, 0.16);
+      --sans: "Sora", system-ui, sans-serif;
+      --disp: "Space Grotesk", system-ui, sans-serif;
+      --accent: var(--cyan);
+      --led: var(--accent);
+    }
+    [data-state="connected"], [data-state="connecting"], [data-state="awaiting_port"] { --accent: var(--blue); }
+    [data-state="flashing"] { --accent: var(--cyan); }
+    [data-state="done"] { --accent: var(--green); }
+    [data-state="error"] { --accent: var(--red); }
+    /* Duas fases de gravação coloridas DIFERENTE nas luzes: o contador vai 0→100
+       duas vezes — Firmware (bootloader/partitions/firmware) em cyan, Update App
+       (LittleFS) em laranja. O rótulo no centro da bola muda junto (JS). */
+    [data-phase="firmware"] { --led: var(--cyan); }
+    [data-phase="app"] { --led: var(--orange); }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: var(--sans); color: var(--txt);
+      overflow: hidden;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      -webkit-font-smoothing: antialiased;
+      /* fundo cobre a tela TODA (não só o stage de 1280px) — sem caixa cortada. */
+      background:
+        radial-gradient(1100px 820px at 50% 46%, rgba(34,90,180,.22), transparent 60%),
+        radial-gradient(820px 680px at 14% 92%, rgba(34,211,238,.10), transparent 60%),
+        radial-gradient(760px 640px at 88% 8%, rgba(255,122,47,.08), transparent 60%),
+        var(--bg);
+    }
+    .stage {
+      position: relative; width: 1280px; height: 800px; max-width: 100%;
+      background: transparent;
+      overflow: hidden;
+    }
+    .stage::before {
+      content: ""; position: absolute; inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1.4px);
+      background-size: 34px 34px; opacity: .35;
+      mask-image: radial-gradient(70% 70% at 50% 50%, #000 30%, transparent 80%);
+    }
+
+    /* header */
+    .top { position: absolute; top: 34px; left: 48px; right: 48px; display: flex; align-items: center; justify-content: space-between; z-index: 5; }
+    .wm { font-family: var(--disp); font-weight: 700; font-size: 52px; letter-spacing: -.02em; display: flex; align-items: center; gap: 16px; line-height: 1; }
+    .wm .glyph { width: 46px; height: 46px; border-radius: 13px; background: linear-gradient(135deg, var(--cyan), var(--blue)); box-shadow: 0 0 26px rgba(34,211,238,.55); flex: 0 0 auto; }
+    .wm i { font-style: normal; color: var(--orange); }
+    .wm .ver { font-family: var(--disp); font-size: 50px; font-weight: 700; letter-spacing: .01em; color: #04101c; background: linear-gradient(135deg, var(--orange), #ff9a3f); padding: 4px 20px; border-radius: 18px; align-self: center; line-height: 1; box-shadow: 0 0 30px rgba(255,122,47,.45); }
+    .pill { display: inline-flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 500; padding: 9px 15px; border-radius: 999px; background: var(--glass); border: 1px solid var(--glass-line); backdrop-filter: blur(12px); color: var(--txt-soft); }
+    .pill .d { width: 8px; height: 8px; border-radius: 50%; background: var(--txt-faint); box-shadow: 0 0 8px currentColor; }
+    [data-state="connecting"] .pill .d, [data-state="awaiting_port"] .pill .d { background: var(--blue); animation: pulse 1s infinite; }
+    [data-state="connected"] .pill .d { background: var(--blue); }
+    [data-state="flashing"] .pill .d { background: var(--cyan); animation: pulse .7s infinite; }
+    [data-state="done"] .pill .d { background: var(--green); }
+    [data-state="error"] .pill .d { background: var(--red); }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+    /* center reactor */
+    .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; z-index: 4; }
+
+    .reactor { position: relative; width: 340px; height: 340px; }
+    .reactor .halo {
+      position: absolute; inset: -40px; border-radius: 50%;
+      background: radial-gradient(circle, color-mix(in srgb, var(--accent) 40%, transparent), transparent 62%);
+      filter: blur(18px); opacity: .5; transition: opacity .6s, background .6s;
+    }
+    [data-state="flashing"] .reactor .halo, [data-state="done"] .reactor .halo { opacity: .9; animation: breathe 2.4s ease-in-out infinite; }
+    @keyframes breathe { 0%,100% { transform: scale(1); opacity: .8; } 50% { transform: scale(1.06); opacity: 1; } }
+
+    .reactor .spin-ring {
+      position: absolute; inset: 8px; border-radius: 50%;
+      border: 1px dashed rgba(140,165,230,.22);
+      animation: spin 36s linear infinite;
+    }
+    .reactor .spin-ring.b { inset: 26px; border-style: dotted; border-color: rgba(140,165,230,.16); animation-duration: 26s; animation-direction: reverse; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .reactor svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+    .reactor .track { fill: none; stroke: rgba(140,165,230,.10); stroke-width: 1.5; }
+
+    /* anel de luzes (progresso) ao redor da bola central */
+    .led-ring { position: absolute; inset: 0; }
+    .led-ring .led {
+      position: absolute; top: 50%; left: 50%;
+      width: 7px; height: 7px; margin: -3.5px;
+      border-radius: 50%;
+      background: rgba(140,165,230,.16);
+      transform: rotate(var(--a)) translateY(calc(-1 * var(--r)));
+      transition: background .25s ease, box-shadow .25s ease, transform .25s ease;
+    }
+    .led-ring .led.on {
+      background: var(--led);
+      box-shadow: 0 0 7px var(--led), 0 0 14px color-mix(in srgb, var(--led) 55%, transparent);
+    }
+    .led-ring .led.tip {
+      transform: rotate(var(--a)) translateY(calc(-1 * var(--r))) scale(1.55);
+      box-shadow: 0 0 10px var(--led), 0 0 22px var(--led);
+    }
+
+    .core {
+      position: absolute; inset: 52px; border-radius: 50%;
+      background: radial-gradient(circle at 50% 36%, rgba(40,58,110,.7), rgba(8,12,26,.92));
+      border: 1px solid rgba(140,165,230,.18);
+      box-shadow: inset 0 2px 20px rgba(0,0,0,.6), inset 0 0 40px color-mix(in srgb, var(--accent) 14%, transparent);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    }
+    .core .done-msg { display: none; font-family: var(--disp); font-weight: 700; font-size: 33px; letter-spacing: -.01em; color: var(--green); text-align: center; filter: drop-shadow(0 0 16px color-mix(in srgb, var(--green) 60%, transparent)); }
+    .core .pct { font-family: var(--disp); font-weight: 700; font-size: 62px; line-height: 1; letter-spacing: -.03em; display: none; }
+    .core .pct sup { font-size: 24px; font-weight: 600; color: var(--txt-soft); vertical-align: super; margin-left: 2px; }
+    .core .cap { font-family: var(--disp); font-size: 11px; letter-spacing: .26em; color: var(--txt-faint); text-transform: uppercase; }
+
+    [data-state="flashing"] .core .pct { display: block; }
+    [data-state="done"] .core .done-msg { display: block; }
+    [data-state="done"] .core .cap { display: none; }
+
+    /* orbiting particles (flashing) */
+    .orbit { position: absolute; inset: 8px; border-radius: 50%; opacity: 0; animation: spin 3.4s linear infinite; }
+    .orbit i { position: absolute; top: -4px; left: 50%; width: 9px; height: 9px; margin-left: -4px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+    .orbit.b { animation-duration: 5s; animation-direction: reverse; } .orbit.b i { background: var(--orange); box-shadow: 0 0 12px var(--orange); }
+    [data-state="flashing"] .orbit { opacity: 1; }
+
+    /* status + cta */
+    .status-wrap { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+    .headline { font-family: var(--disp); font-size: 26px; font-weight: 600; letter-spacing: -.02em; margin: 0; }
+    .headline em { font-style: normal; color: var(--orange); }
+    .substatus { margin: 0; font-size: 14px; color: var(--txt-soft); min-height: 18px; max-width: 520px; }
+    .cta {
+      border: none; cursor: pointer; font-family: var(--sans); font-weight: 600; font-size: 16px; color: #04101c;
+      padding: 17px 46px; border-radius: 14px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 92%, #fff 8%), var(--accent));
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent), 0 14px 36px -12px color-mix(in srgb, var(--accent) 70%, transparent);
+      transition: transform .16s, filter .16s, opacity .2s;
+    }
+    .cta:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.08); }
+    .cta:disabled { cursor: default; opacity: .5; }
+    [data-state="error"] .cta { color: #fff; }
+    [data-state="done"] .cta { color: #04140d; }
+
+    /* floating glass panels */
+    .panel { position: absolute; z-index: 4; background: var(--glass); border: 1px solid var(--glass-line); border-radius: 18px; backdrop-filter: blur(16px); box-shadow: 0 20px 50px -24px rgba(0,0,0,.7); }
+    .panel .ph { font-family: var(--disp); font-size: 10.5px; letter-spacing: .22em; color: var(--txt-faint); text-transform: uppercase; margin-bottom: 14px; }
+
+    /* coluna esquerda: empilha o Start Pack + o card de USB Host, centralizada */
+    /* z-index 6: acima do .center (inset:0, z-index 4) que senão engole os cliques */
+    .p-col-left { position: absolute; left: 64px; top: 50%; transform: translateY(-50%); z-index: 6; width: 262px; display: flex; flex-direction: column; gap: 16px; }
+    .p-col-left .panel { position: relative; top: auto; left: auto; transform: none; width: 100%; }
+
+    /* card de download dos Start Packs (presets + imagens prontos p/ importar) */
+    .p-pack {
+      padding: 22px;
+      /* contorno laranja p/ chamar atenção (destaca do resto, que é azul/ciano) */
+      border-color: rgba(255,122,47,.55);
+      box-shadow: 0 20px 50px -24px rgba(0,0,0,.7), 0 0 0 1px rgba(255,122,47,.28), 0 0 28px -6px rgba(255,122,47,.35);
+    }
+
+    /* card de atualização do MCU USB Host (link externo) */
+    .p-usbhost {
+      display: flex; align-items: center; gap: 13px; padding: 16px 18px; text-decoration: none; color: var(--txt);
+      transition: transform .15s, border-color .2s, box-shadow .2s, background .2s;
+    }
+    .p-usbhost:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--blue) 55%, transparent); box-shadow: 0 18px 44px -22px color-mix(in srgb, var(--blue) 70%, transparent), 0 0 26px -8px color-mix(in srgb, var(--blue) 45%, transparent); }
+    .p-usbhost .uh-ico { width: 40px; height: 40px; flex: 0 0 auto; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, color-mix(in srgb, var(--blue) 26%, transparent), color-mix(in srgb, var(--cyan) 22%, transparent)); color: var(--cyan); }
+    .p-usbhost .uh-ico svg { width: 21px; height: 21px; }
+    .p-usbhost .uh-tx { flex: 1; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+    .p-usbhost .uh-tx b { font-family: var(--disp); font-weight: 600; font-size: 14.5px; }
+    .p-usbhost .uh-tx i { font-style: normal; font-size: 11px; letter-spacing: .04em; color: var(--txt-faint); text-transform: uppercase; }
+    .p-usbhost .uh-arrow { color: var(--txt-faint); display: flex; transition: color .2s, transform .2s; }
+    .p-usbhost:hover .uh-arrow { color: var(--cyan); transform: translate(2px, -2px); }
+    .p-usbhost .uh-arrow svg { width: 17px; height: 17px; }
+    /* (removido na v14, set/2026) Bloco .p-android — estilos do painel "App
+       Android / Baixar APK", que saiu junto com a marcacao. */
+    .p-pack .pack-sub { font-size: 12px; line-height: 1.55; color: var(--txt-faint); margin-bottom: 6px; }
+    .pack-btn {
+      display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--txt);
+      padding: 12px 14px; margin-top: 10px; border-radius: 13px;
+      background: rgba(140,165,230,.06); border: 1px solid rgba(140,165,230,.14);
+      transition: transform .15s, background .2s, border-color .2s, box-shadow .2s;
+    }
+    .pack-btn:hover { transform: translateY(-2px); background: rgba(34,211,238,.10); border-color: color-mix(in srgb, var(--cyan) 45%, transparent); box-shadow: 0 12px 28px -14px color-mix(in srgb, var(--cyan) 70%, transparent); }
+    .pack-btn .pack-ico { width: 38px; height: 38px; flex: 0 0 auto; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, color-mix(in srgb, var(--cyan) 24%, transparent), color-mix(in srgb, var(--blue) 24%, transparent)); color: var(--cyan); }
+    .pack-btn .pack-ico svg { width: 20px; height: 20px; }
+    .pack-btn .pack-tx { flex: 1; display: flex; flex-direction: column; gap: 2px; line-height: 1.2; }
+    .pack-btn .pack-tx b { font-family: var(--disp); font-weight: 600; font-size: 14.5px; }
+    .pack-btn .pack-tx i { font-style: normal; font-size: 11px; color: var(--txt-faint); }
+    .pack-btn .pack-dl { color: var(--txt-faint); display: flex; transition: color .2s, transform .2s; }
+    .pack-btn:hover .pack-dl { color: var(--cyan); transform: translateY(2px); }
+    .pack-btn .pack-dl svg { width: 18px; height: 18px; }
+
+    .p-steps { right: 64px; top: 50%; transform: translateY(-50%); width: 252px; padding: 22px; }
+    .step { display: flex; align-items: center; gap: 13px; padding: 11px 0; }
+    .step .n { width: 30px; height: 30px; border-radius: 9px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-family: var(--disp); font-weight: 600; font-size: 13px; border: 1px solid rgba(140,165,230,.18); color: var(--txt-faint); transition: .3s; }
+    .step .t { font-size: 13.5px; font-weight: 500; color: var(--txt-faint); transition: .3s; }
+    .step.active .n { border-color: var(--accent); color: var(--txt); background: color-mix(in srgb, var(--accent) 18%, transparent); box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent); }
+    .step.active .t { color: var(--txt); }
+    .step.done .n { border-color: var(--green); color: var(--green); background: rgba(43,220,154,.12); }
+    .step.done .t { color: var(--txt-soft); }
+
+    /* bottom options bar */
+    .p-opts { left: 50%; bottom: 38px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 999px; }
+    .toggle { display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 999px; cursor: pointer; transition: background .2s; }
+    .toggle:hover { background: rgba(140,165,230,.07); }
+    .toggle .sw { position: relative; width: 38px; height: 21px; }
+    .toggle input { display: none; }
+    .toggle .tr { position: absolute; inset: 0; border-radius: 999px; background: rgba(140,165,230,.18); transition: .25s; }
+    .toggle .tr::before { content: ""; position: absolute; width: 15px; height: 15px; border-radius: 50%; background: #aeb9d6; top: 3px; left: 3px; transition: .25s; }
+    .toggle input:checked + .tr { background: var(--accent); }
+    .toggle input:checked + .tr::before { transform: translateX(17px); background: #04101c; }
+    .toggle input:disabled + .tr { opacity: .4; }
+    .toggle span { font-size: 13px; color: var(--txt-soft); white-space: nowrap; }
+    .p-opts .vsep { width: 1px; height: 22px; background: rgba(140,165,230,.16); }
+    .logbtn { background: none; border: none; color: var(--txt-faint); font-family: var(--sans); font-size: 12px; cursor: pointer; padding: 8px 12px; }
+    .logbtn:hover { color: var(--txt-soft); }
+
+    .logbox { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); width: 540px; max-height: 150px; overflow-y: auto; display: none; padding: 14px 18px; border-radius: 14px; background: rgba(6,9,18,.9); border: 1px solid var(--glass-line); font-family: "Space Grotesk", monospace; font-size: 11.5px; line-height: 1.6; color: #7d8cb3; white-space: pre-wrap; z-index: 6; }
+    .logbox.open { display: block; }
+
+    /* (removido em ago/2026) Bloco .modal-* — estilos do #warnModal, o aviso
+       de backup V11 -> V12. Removido junto com a marcacao e o wiring; nao ha
+       mais nenhum modal nesta pagina. */
+
+    /* ===== MOBILE / telas estreitas: empilha TUDO num fluxo vertical rolavel.
+       O flasher por Web Serial NAO roda em navegador mobile, mas o usuario
+       ainda precisa ver Start Pack, USB Host e as etapas — antes
+       a coluna esquerda e as etapas ficavam escondidas (display:none). Aqui
+       todo painel vira `position: static` e empilha, com ordem reorganizada:
+       header -> reator/CTA -> etapas -> opcoes -> downloads -> logs. ===== */
+    @media (max-width: 980px) {
+      html, body { height: auto; }
+      body { overflow-x: hidden; overflow-y: auto; align-items: flex-start; min-height: 100vh; }
+
+      .stage {
+        width: 100%; height: auto; min-height: 100vh; overflow: visible;
+        display: flex; flex-direction: column; align-items: center;
+        gap: 20px; padding: 22px 16px 44px; box-sizing: border-box;
+      }
+      .stage::before { display: none; }  /* a mascara de pontos assume tamanho fixo */
+
+      /* header */
+      .top {
+        position: static; transform: none; inset: auto;
+        order: 0; width: 100%; max-width: 380px;
+        flex-direction: column; gap: 12px; align-items: center; text-align: center;
+      }
+      .wm { font-size: 36px; } .wm .ver { font-size: 24px; padding: 2px 11px; }
+
+      /* reator + status + CTA logo abaixo (acao principal) */
+      .center { position: static; inset: auto; order: 1; width: 100%; gap: 18px; }
+      /* scale() encolhe o reator E os filhos/LEDs juntos (insets fixos em px nao
+         escalariam via width/height); margem negativa horizontal recupera o
+         footprint do layout (a caixa continua 340px sem isso -> overflow). */
+      .reactor { transform: scale(.78); margin: -10px -37px; }
+      .headline { font-size: 22px; }
+      .substatus { font-size: 13.5px; padding: 0 6px; }
+
+      /* etapas / opcoes / downloads / logs — empilhados, largura limitada e centrados */
+      .p-steps  { position: static; transform: none; inset: auto; order: 2; width: 100%; max-width: 380px; }
+      .p-opts   { position: static; transform: none; inset: auto; order: 3; width: 100%; max-width: 380px; justify-content: center; flex-wrap: wrap; }
+      .p-col-left { position: static; transform: none; inset: auto; order: 4; width: 100%; max-width: 380px; }
+      .logbox   { position: static; transform: none; inset: auto; order: 5; width: 100%; max-width: 380px; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="stage">
+    <div class="top">
+      <div class="wm"><span class="glyph"></span>BF<i>MiDi</i><span class="ver">V14</span></div>
+      <div class="pill"><span class="d"></span><span id="pillText">Aguardando dispositivo</span></div>
+    </div>
+
+    <!-- coluna esquerda: Start Pack + atualização do USB Host -->
+    <div class="p-col-left">
+    <!-- start pack panel: backups prontos (presets + imagens) p/ importar no editor -->
+    <aside class="panel p-pack">
+      <div class="ph">Start Pack</div>
+      <div class="pack-sub">Pacote inicial de presets e imagens. Baixe o do seu display e importe no editor em <strong>Backup → Restaurar</strong>.</div>
+      <a class="pack-btn" href="./Pack_2.4.json" download="BFMiDi_StartPack_2.4.json">
+        <span class="pack-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+        <span class="pack-tx"><b>Display 2.4″</b><i>BFMiDi 1 e 2</i></span>
+        <span class="pack-dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg></span>
+      </a>
+      <a class="pack-btn" href="./Pack_3.5.json" download="BFMiDi_StartPack_3.5.json">
+        <span class="pack-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+        <span class="pack-tx"><b>Display 3.5″</b><i>BFMiDi 3</i></span>
+        <span class="pack-dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg></span>
+      </a>
+    </aside>
+
+    <!-- atualização do MCU USB Host (BFMiDi 3) — link externo -->
+    <a class="panel p-usbhost" href="https://bffx-updates.github.io/BFMiDi3_USB_HOST/" target="_blank" rel="noopener">
+      <span class="uh-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="1.6"/><path d="M12 5.6V20"/><path d="M12 11l-4 3v3"/><circle cx="8" cy="17" r="1.6"/><path d="M12 9l4 2.5V15"/><rect x="14.4" y="14" width="3.2" height="3.2" rx=".5"/></svg></span>
+      <span class="uh-tx"><b>BFMiDi3 USB Host</b><i>Atualização</i></span>
+      <span class="uh-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+    </a>
+
+    <!-- (removido na v14, set/2026) Painel "App Android / Baixar APK". Ele
+         apontava pro /releases/latest do repo do APK da linha v13, que nao
+         recebe build novo (o APK sai do build_apk, local, e o repo virou
+         privado). Quem quer o app baixa pela pagina de downloads/lojas. -->
+    </div>
+
+    <!-- steps panel -->
+    <aside class="panel p-steps">
+      <div class="ph">Etapas</div>
+      <div class="step active" data-step="1"><div class="n">1</div><div class="t">Conectar USB-C</div></div>
+      <div class="step" data-step="2"><div class="n">2</div><div class="t">Autorizar a porta</div></div>
+      <div class="step" data-step="3"><div class="n">3</div><div class="t">Gravar firmware</div></div>
+      <div class="step" data-step="4"><div class="n">4</div><div class="t">Gravar WebApp</div></div>
+    </aside>
+
+    <!-- center -->
+    <div class="center">
+      <div class="reactor">
+        <div class="halo"></div>
+        <div class="spin-ring"></div>
+        <div class="spin-ring b"></div>
+        <div class="led-ring" id="ledRing"></div>
+        <svg viewBox="0 0 300 300">
+          <circle class="track" cx="150" cy="150" r="134"></circle>
+        </svg>
+        <div class="core">
+          <div class="done-msg">ATUALIZADO!</div>
+          <div class="pct" id="pct">0<sup>%</sup></div>
+          <div class="cap" id="coreCap">Pronto</div>
+        </div>
+      </div>
+
+      <div class="status-wrap">
+        <h1 class="headline" id="headline">Atualizar o <em>BFMiDi</em></h1>
+        <p class="substatus" id="substatus">Conecte o cabo USB-C na porta DEVICE para começar.</p>
+        <button class="cta" id="cta">Conectar e atualizar</button>
+      </div>
+    </div>
+
+    <div class="logbox" id="log"></div>
+
+    <div class="panel p-opts">
+      <!-- (removido em ago/2026) Toggle "Atualização automática". Ele só
+           pulava o SEGUNDO clique — conectar e gravar viravam um passo só —
+           e o nome dava a entender que fazia algo com a versão. Agora é
+           sempre ligado (autoFlashMode), sem controle na tela. -->
+      <!-- Backup automático: LIGADO por padrão. Extrai presets + mídia +
+           aparelhos personalizados antes do reset e devolve depois do flash
+           (production/autobackup.js). Desligar = comportamento antigo, em que
+           a gravação zera a partição de dados. -->
+      <label class="toggle"><span class="sw"><input type="checkbox" id="backupToggle" checked /><span class="tr"></span></span><span>Backup automático</span></label>
+      <span class="vsep"></span>
+      <label class="toggle"><span class="sw"><input type="checkbox" id="eraseToggle" /><span class="tr"></span></span><span>Apagar memória</span></label>
+      <span class="vsep"></span>
+      <button class="logbtn" id="dlBackup" hidden>Baixar backup</button>
+      <button class="logbtn" id="logToggle">Logs</button>
+    </div>
+  </main>
+
+  <!-- (removido em ago/2026) Modal #warnModal — aviso de backup V11 -> V12 que
+       aparecia ao iniciar a atualização. Ver o comentário no wiring do CTA. -->
+
+  <!-- crypto-js: usado pelo esptool-js pra o MD5 do flash (verificacao). -->
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+  <script type="module">
+    // ════════════════════════════════════════════════════════════════════
+    // VISUAL: "Reactor" (Claude Design). A LÓGICA de gravação abaixo é a
+    // mesma validada no hardware — reset por DTR/RTS, gate de PID, fix de
+    // porta fantasma, 4 bins. NÃO mexer no fluxo connect/flash sem motivo;
+    // só a camada que pinta o DOM (setUIState/setProgress) foi reescrita pro
+    // visual novo. Núcleo direto (ESPLoader), sem flasher.js do mock.
+    // ════════════════════════════════════════════════════════════════════
+    import { ESPLoader, Transport } from "./esptool-bundle.js";
+    import * as AB from "./autobackup.js";
+
+    const root = document.documentElement;
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      cta: $("cta"), sub: $("substatus"), head: $("headline"), pill: $("pillText"),
+      pct: $("pct"), cap: $("coreCap"), log: $("log"),
+      erase: $("eraseToggle"),
+      backup: $("backupToggle"), dl: $("dlBackup"),
+    };
+    const steps = [...document.querySelectorAll(".step")];
+
+    // anel de LEDs ao redor da bola central (barra de progresso)
+    const LED_N = 56, LED_R = 130;
+    const ledRing = $("ledRing");
+    const leds = [];
+    for (let i = 0; i < LED_N; i++) {
+      const d = document.createElement("span");
+      d.className = "led";
+      d.style.setProperty("--a", (i * 360 / LED_N) + "deg");
+      d.style.setProperty("--r", LED_R + "px");
+      ledRing.appendChild(d); leds.push(d);
+    }
+
+    const serialLib = navigator.serial || null;
+
+    // Configurações fixas
+    const defaultFilters = [
+      { usbVendorId: 0x303a, usbProductId: 0x80c2 },  // app BFMiDi (S2 e S3)
+      { usbVendorId: 0x303a, usbProductId: 0x0002 },  // bootloader ROM S2
+      { usbVendorId: 0x303a, usbProductId: 0x0009 },  // bootloader ROM S3 (USB-OTG)
+      { usbVendorId: 0x303a, usbProductId: 0x1001 },  // S3 USB-Serial-JTAG
+      { usbVendorId: 0x303a },
+    ];
+    // PIDs que significam "já está em modo download" (pula o reset DTR/RTS).
+    const BOOTLOADER_PIDS = [0x0002, 0x0009, 0x1001];
+
+    // Bins POR CHIP — o chip é detectado pelo esptool na conexão
+    // (esploader.chip.CHIP_NAME), não pelo PID: em bootloader os dois chips
+    // respondem a identificação real. Offsets diferem: S2 = bootloader 0x1000,
+    // littlefs 0x280000 (flash 4 MB); S3 = bootloader 0x0, littlefs 0x720000
+    // (flash 16 MB — ver variants/*/partitions.csv no repo).
+    //
+    // S3 usa tabela OTA (ota_0 0x10000 / ota_1 0x390000 / otadata 0x710000 /
+    // storage 0x720000). O app continua em 0x10000 (= ota_0), e a otadata é
+    // gravada junto: sem ela, uma unidade que já tenha feito OTA voltaria a
+    // bootar ota_1, que este fluxo não grava. otadata.bin é arquivada em
+    // bin_S3/ pelo "flash completo esp32.bat" (cópia do boot_app0.bin do core).
+    const IMAGES_BY_CHIP = {
+      s2: {
+        label: "ESP32-S2", dir: "bin_S2", flashSize: "4MB",
+        files: [
+          { path: "bin_S2/bootloader.bin", address: 0x1000 },
+          { path: "bin_S2/partitions.bin", address: 0x8000 },
+          { path: "bin_S2/firmware.bin",   address: 0x10000 },
+          { path: "bin_S2/littlefs.bin",   address: 0x280000 },
+        ],
+      },
+      s3: {
+        label: "ESP32-S3", dir: "bin_S3", flashSize: "16MB",
+        files: [
+          { path: "bin_S3/bootloader.bin", address: 0x0 },
+          { path: "bin_S3/partitions.bin", address: 0x8000 },
+          { path: "bin_S3/firmware.bin",   address: 0x10000 },
+          { path: "bin_S3/otadata.bin",    address: 0x710000 },
+          { path: "bin_S3/littlefs.bin",   address: 0x720000 },
+        ],
+      },
+    };
+    let images = null;             // definido após detectar o chip (handleConnect)
+    let chipFlashSize = "keep";    // "4MB" (S2) / "16MB" (S3)
+    let chipKey = null;            // "s2" | "s3" — decide o reset final
+
+    // Backup automático: o JSON extraído antes do reset, devolvido ao pedal
+    // depois do flash. Em memória durante o fluxo (a página não recarrega) e
+    // espelhado em IndexedDB como seguro contra F5/fechar a aba no meio.
+    let pendingBackup = null;
+    // Backup de uma sessão anterior recuperado do IndexedDB. NUNCA é
+    // injetado (pode ser de outro pedal) — existe só para ser baixado.
+    let recoveredBackup = null;
+    // Nome da placa lido do pedal antes do reset. Decide o pacote de fábrica
+    // quando o usuário dispensa o backup. null = não deu pra ler.
+    let detectedBoard = null;
+
+    let device = null;
+    let transport = null;
+    let esploader = null;
+    let lastPortInfo = null;
+    let appState = 'idle'; // idle, connecting, awaiting_port, connected, flashing, done, error
+    // Sempre ligado: conectar e gravar sao um passo so. Era um toggle na
+    // tela ("Atualizacao automatica"), removido em ago/2026 — ele nao
+    // escolhia versao nenhuma, so evitava o segundo clique.
+    const autoFlashMode = true;
+
+    // ── Textos por estado (visual Reactor) ──
+    // flashing começa na etapa 3 (firmware); o reportProgress avança pra 4
+    // (WebApp/LittleFS) quando a fase do app começa. done = 5 -> as 4 prontas.
+    const STEP_OF = { idle: 1, connecting: 2, awaiting_port: 2, connected: 3, flashing: 3, done: 5, error: 1 };
+    const PILL = { idle: "Aguardando dispositivo", connecting: "Conectando…", awaiting_port: "Autorização necessária", connected: "Dispositivo conectado", flashing: "Gravando firmware", done: "Atualizado", error: "Falha na conexão" };
+    const CTA = { idle: "Conectar e atualizar", connecting: "Conectando…", awaiting_port: "Autorizar conexão", connected: "Iniciar atualização", flashing: "Atualizando…", done: "Concluído com sucesso", error: "Tentar novamente" };
+    const HEAD = { idle: "Atualizar o <em>BFMiDi</em>", connecting: "Preparando…", awaiting_port: "Confirme a <em>porta</em>", connected: "Tudo <em>pronto</em>", flashing: "Gravando <em>firmware</em>", done: "Atualizado com <em>sucesso</em>", error: "Algo deu <em>errado</em>" };
+    const CAP = { idle: "Pronto", connecting: "Conectando", awaiting_port: "Aguardando", connected: "Conectado", flashing: "Gravando", done: "Concluído", error: "Erro" };
+
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    function setProgress(p) {
+      const lit = Math.round((p / 100) * LED_N);
+      leds.forEach((d, i) => {
+        d.classList.toggle("on", i < lit);
+        d.classList.toggle("tip", p > 0 && p < 100 && i === lit - 1);
+      });
+      els.pct.firstChild.textContent = p;
+    }
+
+    function log(msg) {
+      console.log(msg);
+      const line = document.createElement('div');
+      line.textContent = `› ${msg}`;
+      els.log.appendChild(line);
+      els.log.scrollTop = els.log.scrollHeight;
+    }
+
+    // Marca a etapa ativa (n === cur) e as anteriores como concluídas (n < cur).
+    function setStep(cur) {
+      steps.forEach((s) => {
+        const n = +s.dataset.step;
+        s.classList.toggle("active", n === cur);
+        s.classList.toggle("done", n < cur);
+      });
+    }
+
+    // setUIState(state, message): pinta o visual Reactor a partir do estado.
+    // `message` (opcional) vai pro substatus. Mantém a MESMA máquina de
+    // estados que a lógica de gravação já usava.
+    function setUIState(state, message) {
+      appState = state;
+      root.setAttribute("data-state", state);
+      // Fase de gravação (cor das luzes) só vale durante o flash; fora dele,
+      // as luzes voltam à cor do estado (accent).
+      if (state !== "flashing") root.removeAttribute("data-phase");
+
+      setStep(STEP_OF[state] || 1);
+
+      els.pill.textContent = PILL[state] || "";
+      els.head.innerHTML = HEAD[state] || "";
+      els.cap.textContent = CAP[state] || "";
+      els.cta.textContent = CTA[state] || "";
+      els.cta.disabled = (state === "connecting" || state === "flashing");
+      if (message != null) els.sub.textContent = message;
+
+      const isProcessing = (state === "connecting" || state === "flashing" || state === "awaiting_port");
+      els.erase.disabled = isProcessing;
+
+      if (state === "idle") { setProgress(0); els.cap.textContent = "Pronto"; }
+      if (state === "done") setProgress(100);
+      if (state === "error") els.log.classList.add("open"); // mostra logs no erro
+    }
+
+    // Sem toast no visual Reactor: o erro já aparece no substatus + nos logs.
+    function showToast(msg) { log("⚠ " + msg); }
+
+    // ── UI wiring ──
+    // (removido em ago/2026) O modal "Atenção" que interrompia o INÍCIO da
+    // atualização com o aviso de backup V11 -> V12. Ele descrevia a estreia do
+    // sistema de backup na V12 e a não-migração dos backups da V11; a partir
+    // da V13 a base já está toda na V12+, então o aviso só somava um clique
+    // para todo mundo. O CTA em estado `idle` agora chama handleConnect()
+    // direto, igual aos demais estados.
+    els.cta.addEventListener("click", () => {
+      if (appState === 'idle') {
+        handleConnect();
+      } else if (appState === 'error' || appState === 'awaiting_port') {
+        handleConnect();
+      } else if (appState === 'connected') {
+        handleFlash();
+      }
+    });
+
+
+    els.erase.addEventListener('change', () => {
+      log("Apagar memória: " + (els.erase.checked ? "SIM" : "NÃO"));
+    });
+
+    els.backup.addEventListener('change', () => {
+      log("Backup automático: " + (els.backup.checked ? "ATIVADO" : "DESATIVADO"));
+      if (!els.backup.checked) {
+        log("Sem backup, a gravação apaga presets, imagens e ícones — o pedal " +
+            "fica com o pacote de fábrica do display dele.");
+      }
+    });
+
+    // Salvar o backup como arquivo é sempre possível enquanto ele existir —
+    // inclusive depois de restaurado, se o usuário quiser a cópia.
+    els.dl.addEventListener('click', () => {
+      const obj = pendingBackup || recoveredBackup;
+      if (obj) AB.downloadBackup(obj);
+    });
+
+    // Um F5 no meio do fluxo não pode perder os dados já extraídos: o
+    // backup fica espelhado em IndexedDB até a restauração confirmar.
+    // Fica em variável SEPARADA de propósito — um backup recuperado pode
+    // ser de OUTRO pedal, e injetá-lo num pedal diferente trocaria os
+    // presets do usuário pelos de outra unidade. Só serve para baixar.
+    AB.loadStashedBackup().then((rec) => {
+      if (!rec) return;
+      recoveredBackup = rec.obj;
+      els.dl.hidden = false;
+      const when = new Date(rec.at).toLocaleString();
+      log(`Backup de ${when} recuperado do navegador — use "Baixar backup" ` +
+          `para salvá-lo e restaure pelo editor.`);
+    }).catch(() => {});
+
+    $("logToggle").addEventListener("click", () => els.log.classList.toggle("open"));
+
+    // Download dos Start Packs forçado via blob: o atributo `download` do <a> é
+    // ignorado por alguns navegadores quando o servidor (GitHub Pages) manda
+    // Content-Type: application/json → o navegador ABRE o JSON em vez de baixar.
+    // Buscar como blob e disparar um <a> com objectURL garante o "salvar como".
+    document.querySelectorAll(".pack-btn").forEach((a) => {
+      a.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const url = a.getAttribute("href");
+        const name = a.getAttribute("download") || url.split("/").pop();
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const blob = await res.blob();
+          const obj = URL.createObjectURL(blob);
+          const tmp = document.createElement("a");
+          tmp.href = obj; tmp.download = name;
+          document.body.appendChild(tmp); tmp.click(); tmp.remove();
+          setTimeout(() => URL.revokeObjectURL(obj), 2000);
+        } catch (err) {
+          log("Falha no download (" + name + "): " + err.message);
+          window.location.href = url; // fallback: abre normalmente
+        }
+      });
+    });
+
+    // ════════════════════════════════════════════════════════════════════
+    // ── NÚCLEO DE GRAVAÇÃO (validado no hardware — preservado) ──────────────
+    // ════════════════════════════════════════════════════════════════════
+
+    const espLoaderTerminal = {
+      clean() { },
+      writeLine(data) { log(data); },
+      write(data) { log(data); },
+    };
+
+    async function acquirePort() {
+      if (!serialLib) throw new Error("Navegador incompatível. Use Chrome ou Edge.");
+
+      log("User Agent: " + navigator.userAgent);
+
+      // Tenta encontrar dispositivo já autorizado (sem diálogo)
+      try {
+        const ports = await serialLib.getPorts();
+        let matches = ports.filter(p => {
+          const info = p.getInfo();
+          return defaultFilters.some(f =>
+            f.usbVendorId === info.usbVendorId &&
+            (!f.usbProductId || f.usbProductId === info.usbProductId)
+          );
+        });
+
+        // CRITICO: descarta portas LEMBRADAS mas NAO conectadas fisicamente
+        // (fantasmas de sessoes anteriores em bootloader). Sem isto, uma porta
+        // PID 0x2 velha era auto-selecionada, isBootloader virava true e o
+        // RESET era PULADO INTEIRO -> pedal nunca entrava em download.
+        // SerialPort.connected existe no Chrome >= 117.
+        const live = matches.filter(p => p.connected === true);
+        if (live.length) matches = live;
+
+        // Prefere a porta de APP (nao-bootloader): so cai num PID de download
+        // (0x0002 S2 / 0x0009 / 0x1001 S3) se for a unica conectada (ai o
+        // pedal ja esta em bootloader de verdade).
+        matches.sort((a, b) =>
+          (BOOTLOADER_PIDS.includes(a.getInfo().usbProductId) ? 1 : 0) -
+          (BOOTLOADER_PIDS.includes(b.getInfo().usbProductId) ? 1 : 0)
+        );
+        const match = matches[0];
+
+        if (match) {
+          device = match;
+          const info = device.getInfo();
+          lastPortInfo = { usbVendorId: info.usbVendorId, usbProductId: info.usbProductId };
+          const liveTag = match.connected === true ? "" :
+            (match.connected === false ? " [LEMBRADA/offline]" : "");
+          log(`Dispositivo encontrado automaticamente: VID=0x${info.usbVendorId.toString(16)} PID=0x${info.usbProductId.toString(16)}${liveTag}`);
+          return device;
+        }
+      } catch (e) {
+        log("Auto-detect falhou: " + e.message);
+      }
+
+      // Nenhum dispositivo autorizado encontrado, mostra diálogo
+      log("Solicitando porta serial...");
+      const filters = lastPortInfo ? [lastPortInfo] : defaultFilters;
+      try {
+        device = await serialLib.requestPort({ filters });
+        const info = device.getInfo();
+        lastPortInfo = { usbVendorId: info.usbVendorId, usbProductId: info.usbProductId };
+        return device;
+      } catch (err) {
+        if (err.name === "NotFoundError") return null; // User cancelled
+        throw err;
+      }
+    }
+
+    function wrapSignals(t) {
+      const wrap = (fn) => async (val) => {
+        try { return await fn.call(t, val); }
+        catch (err) { log("Signal error: " + err.message); }
+      };
+      if (t?.setDTR) t.setDTR = wrap(t.setDTR);
+      if (t?.setRTS) t.setRTS = wrap(t.setRTS);
+      return t;
+    }
+
+    async function closeTransportSafe(t) {
+      if (!t) return;
+      try {
+        await t.disconnect();
+        await t.waitForUnlock?.(200);
+      } catch (e) { }
+    }
+
+    async function pulseBootMode(t) {
+      // Sequência de boot para ESP32-S3 USB nativo
+      // GPIO0 = DTR (boot), EN/RESET = RTS
+      log("Enviando sequência de boot...");
+
+      // Reset inicial
+      await t.setRTS?.(true);   // EN baixo (reset)
+      await t.setDTR?.(true);   // GPIO0 baixo (boot mode)
+      await sleep(100);
+
+      // Solta reset mantendo GPIO0 baixo
+      await t.setRTS?.(false);  // EN alto (sai do reset)
+      await sleep(50);
+
+      // Solta GPIO0
+      await t.setDTR?.(false);  // GPIO0 alto
+      await sleep(50);
+
+      log("Sequência de boot enviada.");
+    }
+
+    async function waitForReconnect(timeoutMs = 15000) {
+      const deadline = Date.now() + timeoutMs;
+      while (Date.now() < deadline) {
+        const ports = await serialLib.getPorts();
+        const cands = ports.filter(p =>
+          p.getInfo().usbVendorId === lastPortInfo.usbVendorId
+        );
+        // Prefere a porta fisicamente conectada (a nova, em bootloader),
+        // nao uma lembrada/offline de antes do reset.
+        const match = cands.find(p => p.connected === true)
+                   || cands.find(p => p.connected !== false);
+        if (match) {
+          device = match;
+          const info = device.getInfo();
+          lastPortInfo = { usbVendorId: info.usbVendorId, usbProductId: info.usbProductId };
+          log(`Reconectado: VID=${info.usbVendorId.toString(16)} PID=${info.usbProductId.toString(16)}`);
+          return match;
+        }
+        await sleep(250);
+      }
+      log("Timeout aguardando reconexão.");
+      throw new Error("Dispositivo não reconectou. Tente desconectar e conectar o cabo.");
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // ── BACKUP AUTOMÁTICO ───────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════════
+    //
+    // A gravação regrava a partição de dados inteira. Estas duas funções
+    // tiram os dados do usuário ANTES (com o pedal ainda rodando o app, que
+    // é a única janela em que o canal CDC existe) e devolvem DEPOIS.
+    // A config GLOBAL não entra: ela mora na NVS e nenhuma região gravada
+    // encosta nela — ver o cabeçalho do autobackup.js.
+
+    function backupPhaseLabel(p) {
+      if (p.phase === "presets")  return "presets";
+      if (p.phase === "imagens")  return "imagens";
+      if (p.phase === "icones")   return "ícones";
+      if (p.phase === "aparelhos") return "aparelhos personalizados";
+      return p.phase || "";
+    }
+
+    function onBackupProgress(prefix) {
+      return (p) => {
+        const pct = (typeof p.pct === "number") ? ` ${p.pct}%` : "";
+        const kb = p.bytes ? ` (${(p.bytes / 1024).toFixed(0)} KB)` : "";
+        els.sub.textContent = `${prefix} ${backupPhaseLabel(p)}${pct}${kb}…`;
+        if (typeof p.pct === "number") setProgress(p.pct);
+      };
+    }
+
+    // Pacote de fábrica a injetar quando o usuário DISPENSA o backup —
+    // a regra e o porquê estão no autobackup.js (defaultPackFor).
+    const defaultPackUrl = () => AB.defaultPackFor(detectedBoard, chipKey);
+
+    // Roda com a porta do APP aberta por nós mesmos — a ÚNICA janela em que
+    // o canal CDC existe. Lê o modelo da placa (sempre) e extrai o backup
+    // (se o toggle estiver ligado). Retorna:
+    //   "reset" — o reset pro bootloader já foi pulsado nesta porta
+    //   "skip"  — segue pelo caminho original (Transport + pulseBootMode)
+    //   "abort" — o usuário desistiu de gravar sem backup
+    async function prepareBeforeFlash() {
+      // Zera antes de tudo: um backup de outra unidade que tenha sobrado na
+      // memória não pode acabar injetado neste pedal.
+      pendingBackup = null;
+      detectedBoard = null;
+      const wantBackup = !!(els.backup && els.backup.checked);
+
+      let ctl = null;
+      try {
+        setUIState('connecting', wantBackup
+          ? "Salvando os dados do pedal antes de gravar…"
+          : "Identificando o pedal…");
+        setProgress(0);
+        ctl = await AB.openControl(device, log);
+
+        // Modelo da placa: decide o pacote de fábrica quando não há backup.
+        // Falhar aqui não é fatal — o defaultPackUrl cai no chip.
+        try {
+          const g = await ctl.call('GET', '/config/global');
+          if (g && g.board) {
+            detectedBoard = String(g.board);
+            log("Placa identificada: " + detectedBoard);
+          }
+        } catch (e) {
+          log("Modelo da placa não pôde ser lido (" + e.message + ").");
+        }
+
+        if (wantBackup) {
+          const { obj, stats } = await AB.extractBackup(ctl, {
+            log, onProgress: onBackupProgress("Lendo"),
+          });
+
+          pendingBackup = obj;
+          await AB.stashBackup(obj);
+          if (els.dl) els.dl.hidden = false;
+          log(`Backup salvo: ${stats.presets} presets, ${stats.images} imagens, ` +
+              `${stats.icons} ícones, ${stats.userPedals} aparelhos personalizados.`);
+
+          if (els.erase && els.erase.checked) {
+            log("ATENÇÃO: 'Apagar memória' também apaga a NVS — placa, cores, " +
+                "brilho e Wi-Fi voltam ao padrão. O backup automático não cobre " +
+                "a configuração global (ela normalmente sobrevive à gravação).");
+          }
+        }
+
+        // Reset pro bootloader pela cascata VERIFICADA do autobackup.js
+        // (pulso DTR/RTS na porta aberta → 1200 bps touch), que fecha a porta
+        // nos dois casos. Só devolvemos "reset" quando o USB realmente
+        // re-enumerou: em "false" o caminho original (Transport +
+        // pulseBootMode) ainda roda como rede de segurança — sem isso, uma
+        // máquina em que o pulso não pega ficava sem tentativa nenhuma e o
+        // esptool morria em "Failed to connect with the device".
+        setUIState('connecting', "Reiniciando em modo download…");
+        const resetOk = await ctl.resetToBootloader();
+        ctl = null;   // já fechada pela cascata
+        if (!resetOk) log("Reset pelo canal de controle não pegou — tentando pelo esptool.");
+        return resetOk ? "reset" : "skip";
+
+      } catch (err) {
+        try { if (ctl) await ctl.close(); } catch (e) { }
+        if (!wantBackup) {
+          // Sem backup pra perder: o canal CDC era só pra identificar a
+          // placa. Segue pelo caminho original, sem incomodar o usuário.
+          log("Canal de controle indisponível (" + err.message + ") — seguindo.");
+          return "skip";
+        }
+        log("Backup automático falhou: " + err.message);
+        const go = window.confirm(
+          "Não foi possível salvar automaticamente os dados deste pedal.\n\n" +
+          "Motivo: " + err.message + "\n\n" +
+          "Se continuar, a gravação vai APAGAR presets, imagens e ícones.\n" +
+          "Cancele se preferir fazer o backup pelo editor antes.");
+        return go ? "skip" : "abort";
+      }
+    }
+
+    // Depois do flash, devolve ao pedal: o backup do usuário, ou — quando
+    // ele dispensou o backup — o pacote de fábrica do display dele, se a
+    // imagem gravada não for a certa (ver defaultPackUrl).
+    // Nunca derruba a atualização: se algo falhar, o backup do usuário é
+    // BAIXADO para ele restaurar pelo editor.
+    async function restoreAfterFlash() {
+      const packUrl = pendingBackup ? null : defaultPackUrl();
+      if (!pendingBackup && !packUrl) {
+        if (!pendingBackup) log("Pacote de fábrica: a imagem gravada já é a correta para esta placa.");
+        return;
+      }
+
+      let ctl = null;
+      try {
+        root.dataset.phase = "app";
+        setUIState('flashing', pendingBackup
+          ? "Devolvendo seus dados ao pedal…"
+          : "Aplicando o pacote de fábrica…");
+        setProgress(0);
+
+        let payload = pendingBackup;
+        if (!payload) {
+          log("Sem backup — aplicando o pacote de fábrica " + packUrl);
+          const r = await fetch(packUrl);
+          if (!r.ok) throw new Error("pacote não encontrado (" + packUrl + ")");
+          payload = await r.json();
+          if (!payload || !payload.presets) throw new Error("pacote de fábrica inválido");
+        }
+
+        const appPort = await AB.waitForAppPort(0x303a, 25000);
+        if (!appPort) throw new Error("o pedal não reapareceu como BFMiDi (PID 80C2)");
+        await sleep(1500);   // deixa o firmware terminar o boot antes do PING
+
+        ctl = await AB.openControl(appPort, log);
+        const stats = await AB.injectBackup(ctl, payload, {
+          log, onProgress: onBackupProgress("Gravando"),
+        });
+
+        log(`Restaurado: ${stats.presets} presets, ${stats.images} imagens, ` +
+            `${stats.icons} ícones, ${stats.userPedals} aparelhos.`);
+        if (stats.failed.length) {
+          log("Não coube / falhou: " + stats.failed.join(", "));
+          // Só faz sentido baixar o backup DO USUÁRIO: o pacote de fábrica
+          // continua disponível nos botões de download desta própria página.
+          if (pendingBackup) {
+            AB.downloadBackup(pendingBackup);
+            log("Backup baixado para você restaurar o que faltou pelo editor.");
+          }
+        } else if (pendingBackup) {
+          // Só o espelho no navegador some. O backup fica na memória para o
+          // botão "Baixar backup" continuar servindo até a página fechar.
+          await AB.clearStashedBackup();
+        }
+      } catch (err) {
+        log("Falha ao devolver os dados: " + err.message);
+        if (pendingBackup) {
+          AB.downloadBackup(pendingBackup);
+          log("Backup baixado — restaure pelo editor em SYSTEM > MANUTENÇÃO.");
+        } else {
+          log("O pacote de fábrica não foi aplicado. O pedal ficou com o " +
+              "pacote da imagem gravada; para trocar, baixe o pacote nesta " +
+              "página e restaure pelo editor.");
+        }
+      } finally {
+        try { if (ctl) await ctl.close(); } catch (e) { }
+      }
+    }
+
+    // O esptool oficial tem um override do ESP32-S3 que limpa o
+    // FORCE_DOWNLOAD_BOOT e dispara o watchdog RTC; o esptool-js não o
+    // portou, e o hard reset genérico por RTS pode deixar o S3 parado no
+    // ROM. Sem o boot, não há canal CDC pra devolver o backup.
+    async function resetS3ByWatchdog(loader) {
+      const RTC_CNTL_OPTION1_REG = 0x6000812c;
+      const RTC_CNTL_FORCE_DOWNLOAD_BOOT_MASK = 0x1;
+      const RTC_CNTL_WDTCONFIG0_REG = 0x60008098;
+      const RTC_CNTL_WDTCONFIG1_REG = 0x6000809c;
+      const RTC_CNTL_WDTWPROTECT_REG = 0x600080b0;
+      const RTC_CNTL_WDT_WKEY = 0x50d83aa1;
+
+      await loader.writeReg(RTC_CNTL_OPTION1_REG, 0, RTC_CNTL_FORCE_DOWNLOAD_BOOT_MASK);
+      await loader.writeReg(RTC_CNTL_WDTWPROTECT_REG, RTC_CNTL_WDT_WKEY);
+      await loader.writeReg(RTC_CNTL_WDTCONFIG1_REG, 2000);
+      try {
+        await loader.writeReg(RTC_CNTL_WDTCONFIG0_REG, 0xd0000102);
+      } catch (e) {
+        await sleep(700);   // o watchdog reiniciou antes da resposta USB
+        return;
+      }
+      try { await loader.writeReg(RTC_CNTL_WDTWPROTECT_REG, 0); } catch (e) { }
+      await sleep(700);
+    }
+
+    async function handleConnect() {
+      try {
+        const selectedDevice = await acquirePort();
+        if (!selectedDevice) return; // Cancelled
+
+        setUIState('connecting', "Preparando dispositivo...");
+        await sleep(500);
+
+        // Ja em modo download? S2 = PID 0x0002; S3 = 0x0009 (USB-OTG) ou
+        // 0x1001 (USB-Serial-JTAG, o modo default do ROM no S3).
+        const isBootloader = BOOTLOADER_PIDS.includes(lastPortInfo?.usbProductId);
+
+        if (!isBootloader) {
+          // BACKUP + IDENTIFICAÇÃO DA PLACA — tem que ser AQUI: é a única
+          // janela em que o pedal ainda roda o app e o canal CDC responde.
+          // Quando dá certo, ele mesmo pulsa o reset na porta que abriu (o
+          // caminho validado no editor), e o bloco do Transport é pulado.
+          const backupOutcome = await prepareBeforeFlash();
+          if (backupOutcome === "abort") {
+            log("Gravação cancelada pelo usuário (sem backup).");
+            setUIState('idle', "Gravação cancelada. Os dados do pedal continuam intactos.");
+            await disconnect(true);
+            return;
+          }
+
+          if (backupOutcome !== "reset") {
+            let preTransport = null;
+            try {
+              preTransport = wrapSignals(new Transport(device, true));
+              // Reset por DTR/RTS (pulseBootMode): o USB CDC do arduino-esp32
+              // EMULA o reset classico do esptool no USB nativo do S2/S3. Era
+              // este o metodo original do atualizador (funcionava na V11 e a V12
+              // tem a mesma init USB - USB.begin() + composite CDC+MIDI). Abre a
+              // 115200 e pulsa DTR/RTS.
+              await preTransport.connect(115200);
+              await pulseBootMode(preTransport);
+            } catch (e) {
+              log("Boot pulse warning: " + e.message);
+            } finally {
+              await closeTransportSafe(preTransport);
+            }
+          }
+
+          setUIState('connecting', "Reiniciando em modo download...");
+          log("Aguardando re-enumeração USB...");
+          await sleep(2000);
+
+          // Tenta reconectar rapidamente (3s) - se o browser já tem permissão pro PID 0x0002
+          try {
+            await waitForReconnect(3000);
+          } catch (e) {
+            // Esperado: ESP32-S2 muda de PID ao entrar em bootloader,
+            // browser precisa de nova autorização do usuário
+            log("Novo dispositivo detectado - autorização necessária");
+            device = null;
+            lastPortInfo = null;
+          }
+        }
+
+        // Se device for null aqui, significa que precisamos de intervencao manual
+        if (!device) {
+          setUIState('awaiting_port', "Por segurança, confirme a nova porta: clique e selecione o dispositivo.");
+          return; // Sai da funcao e aguarda clique do usuario
+        }
+
+        // Delay para estabilizar a porta após reconexão
+        log("Aguardando estabilização da porta...");
+        await sleep(1000);
+
+        // Tenta conectar com retry em caso de "invalid response"
+        let connected = false;
+        let lastError = null;
+        const maxRetries = 3;
+
+        for (let attempt = 1; attempt <= maxRetries && !connected; attempt++) {
+          try {
+            log(`Tentativa de conexão ${attempt}/${maxRetries}...`);
+
+            // Fecha transport anterior se existir
+            if (transport) {
+              await closeTransportSafe(transport);
+              transport = null;
+              esploader = null;
+              await sleep(300);
+            }
+
+            transport = wrapSignals(new Transport(device, true));
+            esploader = new ESPLoader({
+              transport,
+              baudrate: 115200,
+              terminal: espLoaderTerminal,
+              romBaudrate: 115200,
+            });
+
+            await esploader.main('no_reset');
+            connected = true;
+            log("Conexão estabelecida com sucesso!");
+
+            // ── Detecção do CHIP (S2 vs S3) ──
+            // O esptool identifica o silício de verdade na conexão — é isto
+            // que decide o conjunto de bins (bin_S2/ ou bin_S3/) e os offsets
+            // (bootloader 0x1000 vs 0x0, littlefs 0x280000 vs 0x720000).
+            // CHIP_NAME direto; fallback getChipDescription (ambos retornam
+            // algo contendo "S2"/"S3", ex. "ESP32-S3 (QFN56)").
+            let chipName = "";
+            try { chipName = String(esploader.chip?.CHIP_NAME || ""); } catch (e) { }
+            if (!/S[23]/.test(chipName)) {
+              try { chipName = String(await esploader.chip.getChipDescription(esploader)); }
+              catch (e) { log("getChipDescription falhou: " + e.message); }
+            }
+            log("Chip detectado: " + (chipName || "desconhecido"));
+            // Guardado no escopo do módulo: o reset final depende do chip
+            // (o S3 precisa do override por watchdog — ver resetS3ByWatchdog).
+            chipKey = chipName.includes("S3") ? "s3"
+                    : chipName.includes("S2") ? "s2" : null;
+            if (!chipKey) {
+              throw new Error("Chip não suportado pelo atualizador: " + (chipName || "desconhecido"));
+            }
+            const chipCfg = IMAGES_BY_CHIP[chipKey];
+            images = chipCfg.files;
+            chipFlashSize = chipCfg.flashSize;
+            log(`Binários: ${chipCfg.dir}/ (${chipCfg.label}, flash ${chipCfg.flashSize})`);
+
+          } catch (err) {
+            lastError = err;
+            log(`Tentativa ${attempt} falhou: ${err.message}`);
+
+            await closeTransportSafe(transport);
+            transport = null;
+            esploader = null;
+
+            if (attempt < maxRetries) {
+              log("Aguardando antes de nova tentativa...");
+              await sleep(1000 * attempt);
+            } else {
+              throw lastError;
+            }
+          }
+        }
+
+        if (!connected) {
+          throw lastError || new Error("Falha ao conectar após múltiplas tentativas");
+        }
+
+        setUIState('connected', "Dispositivo pronto. Clique para atualizar.");
+
+        // Se estiver em modo automático, inicia o flash automaticamente
+        if (autoFlashMode) {
+          log("Modo automático ativo - iniciando gravação...");
+          await sleep(300);
+          handleFlash();
+        }
+
+      } catch (err) {
+        log("Erro fatal: " + err.message);
+        log(err.stack);
+        setUIState('error', "Erro na conexão: " + err.message);
+        showToast(err.message);
+        await disconnect(true);
+      }
+    }
+
+    async function disconnect(silent = false) {
+      try { if (transport) await transport.disconnect(); } catch (e) { }
+      device = null;
+      transport = null;
+      esploader = null;
+      if (!silent) setUIState('idle', "Conecte o cabo USB-C na porta DEVICE para começar.");
+    }
+
+    async function fetchBinaryString(path) {
+      const res = await fetch(path);
+      if (!res.ok) throw new Error("Arquivo não encontrado: " + path);
+      const buffer = await res.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i += 0x8000) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      }
+      return binary;
+    }
+
+    async function handleFlash() {
+      if (!esploader) return;
+      if (!images) {
+        setUIState('error', "Chip não identificado — reconecte o dispositivo.");
+        return;
+      }
+
+      setUIState('flashing', "Preparando arquivos...");
+      setProgress(0);
+
+      try {
+        const shouldEraseAll = !!els.erase?.checked;
+        const canEraseBeforeWrite = typeof esploader.eraseFlash === "function";
+
+        // Erase All Flash - com tratamento de erro adequado
+        if (shouldEraseAll) {
+          setProgress(0);
+          setUIState('flashing', "Apagando toda a memória...");
+          log("Iniciando Erase All Flash...");
+
+          if (canEraseBeforeWrite) {
+            try {
+              await esploader.eraseFlash();
+              log("Erase All Flash concluido com sucesso.");
+            } catch (eraseErr) {
+              // Alguns chips retornam erro mas o erase funciona
+              // Verificamos se é um erro crítico ou apenas um warning
+              log("Aviso no Erase Flash: " + eraseErr.message);
+
+              // Se o erro contiver "timeout" ou "disconnect", é crítico
+              if (eraseErr.message.toLowerCase().includes("timeout") ||
+                  eraseErr.message.toLowerCase().includes("disconnect")) {
+                throw eraseErr;
+              }
+              // Caso contrário, continuamos (o erase pode ter funcionado)
+              log("Continuando com a gravação...");
+            }
+          }
+
+          // Pequeno delay para garantir que o chip está pronto
+          await sleep(500);
+        }
+
+        const fileArray = [];
+        let totalSize = 0;
+
+        // Load files
+        setUIState('flashing', "Carregando arquivos de firmware...");
+        for (const img of images) {
+          log(`Carregando ${img.path}...`);
+          const data = await fetchBinaryString(img.path);
+          fileArray.push({ data, address: img.address });
+          totalSize += data.length;
+        }
+        log(`Total: ${fileArray.length} arquivos, ${totalSize} bytes`);
+
+        setUIState('flashing', "Gravando firmware...");
+
+        // Flash - usa eraseAll na writeFlash apenas se não tiver o método eraseFlash
+        // ou se eraseFlash não foi executado
+        const useEraseInWrite = shouldEraseAll && !canEraseBeforeWrite;
+
+        await esploader.writeFlash({
+          fileArray,
+          eraseAll: useEraseInWrite,
+          compress: true,
+          flashSize: chipFlashSize,
+          reportProgress: (idx, written, total) => {
+            // Duas fases: bootloader/partitions/firmware = "Firmware" (cyan);
+            // littlefs.bin = "Update App" (laranja). O contador 0→100 reinicia
+            // em cada fase — por isso a cor das luzes distingue uma da outra.
+            const isApp = images[idx] && images[idx].path.endsWith("littlefs.bin");
+            root.dataset.phase = isApp ? "app" : "firmware";
+            setStep(isApp ? 4 : 3);   // etapa 4 = Gravar WebApp (LittleFS)
+            els.cap.textContent = isApp ? "WebApp" : "Firmware";
+            const percent = Math.floor((written / total) * 100);
+            setProgress(percent);
+            els.sub.textContent = (isApp ? "Gravando WebApp… " : "Gravando firmware… ") + percent + "%";
+          },
+          calculateMD5Hash: (image) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)),
+        });
+
+        log("Gravação concluída, finalizando...");
+
+        setUIState('flashing', "Reiniciando dispositivo...");
+        try {
+          if (chipKey === "s3") {
+            // S3: `after()`/`hardReset()` resetam por RTS, e no S3 isso pode
+            // deixar o chip parado no ROM — sem boot não há canal CDC pra
+            // devolver o backup. Esta é a sequência do esptool oficial (limpa
+            // FORCE_DOWNLOAD_BOOT + watchdog RTC), com o caminho antigo como
+            // fallback. Um só reset: a watchdog JÁ reinicia o chip.
+            try {
+              await resetS3ByWatchdog(esploader);
+            } catch (e) {
+              log("Watchdog S3 falhou (" + e.message + ") — reset padrão.");
+              await esploader.after("hard_reset");
+            }
+          } else {
+            // S2: fluxo original, não alterar. `after()` já reseta por RTS e
+            // o `hardReset()` seguinte é redundante — mas é o que está
+            // validado no hardware.
+            try { await esploader.after(); }
+            catch (afterErr) { log("Aviso no after(): " + afterErr.message); }
+            await esploader.hardReset();
+          }
+        } catch (e) {
+          // Ignoramos erro aqui pois o dispositivo desconecta ao reiniciar (USB Nativo)
+          log("Reset enviado (dispositivo pode ter desconectado)");
+        }
+
+        // Solta a porta do bootloader ANTES de procurar a porta do app: são
+        // objetos de porta diferentes (PID do ROM vs 0x80C2).
+        await disconnect(true);
+
+        // Devolve presets, mídia e aparelhos personalizados. Best-effort:
+        // qualquer falha aqui baixa o arquivo em vez de derrubar o update.
+        await restoreAfterFlash();
+
+        setUIState('done', "Processo finalizado com sucesso.");
+        setProgress(100);
+        log("=== ATUALIZAÇÃO CONCLUÍDA COM SUCESSO ===");
+
+        // Reset UI after a few seconds
+        setTimeout(() => {
+          setUIState('idle', "Pronto para uma nova atualização.");
+        }, 5000);
+
+      } catch (err) {
+        log("ERRO FATAL: " + err.message);
+        log(err.stack || "");
+        setUIState('error', "Falha na gravação: " + err.message);
+        showToast(err.message);
+        await disconnect(true);
+      }
+    }
+
+    // Estado inicial
+    setUIState('idle', "Conecte o cabo USB-C na porta DEVICE para começar.");
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,452 @@
+{
+  "version": "14.0",
+  "generated": "2026-09-24T23:10:21.223Z",
+  "fw": {
+    "s3": {
+      "version": "14.0",
+      "file": "bin_S3/firmware.bin",
+      "size": 2025696,
+      "sha256": "71d60a1f23db8ad2d13bc6e289c492da430a6ac016261e3a5e588b7c09cd61e0",
+      "built": "2026-09-24T23:09:26.858Z",
+      "flash": [
+        {
+          "file": "bin_S3/bootloader.bin",
+          "address": 0,
+          "size": 19984,
+          "sha256": "b41be55ae9a52aeeb21645c51b86c14027f84c2c91bf67bee6aa0e1b15d18e8b"
+        },
+        {
+          "file": "bin_S3/partitions.bin",
+          "address": 32768,
+          "size": 3072,
+          "sha256": "121d99567600bfb4e6b0f57f779838a4d77f2357a7ece5fd0288b04f2b9501ab"
+        },
+        {
+          "file": "bin_S3/firmware.bin",
+          "address": 65536,
+          "size": 2025696,
+          "sha256": "71d60a1f23db8ad2d13bc6e289c492da430a6ac016261e3a5e588b7c09cd61e0"
+        },
+        {
+          "file": "bin_S3/otadata.bin",
+          "address": 7405568,
+          "size": 8192,
+          "sha256": "f94c5d786a7a8fab06ac5d10e33bf37711a6697636dc037559ea19cc410a17f0"
+        },
+        {
+          "file": "bin_S3/littlefs.bin",
+          "address": 7471104,
+          "size": 5242880,
+          "sha256": "c04711ef52e0542860109bea88ef91360e73bfb267bb6750ce1fa06cead54515"
+        }
+      ],
+      "notes": "v13.3 — Novidades da linha 13\r\n• Backup automático na atualização: ao gravar pelo cabo, seus presets,\r\n  imagens, ícones e aparelhos personalizados são salvos antes e devolvidos\r\n  ao pedal depois.\r\n• Assistente de Configuração: monta um preset inteiro passo a passo, sem\r\n  precisar entender MIDI.\r\n• Novo comportamento STEPS: cada toque avança um passo de uma sequência,\r\n  com figura rítmica por passo e opção de seguir o TAP TEMPO ou um BPM fixo.\r\n• Novo comportamento CONTROL: um toque alterna entre FX 1 e FX 2 — quem\r\n  entra liga, quem sai desliga.\r\n• Chamada de presets configurável: você escolhe o que cada footswitch faz\r\n  no toque curto e no toque longo (chamar preset, trocar banco, entrar em\r\n  LIVE e mais).\r\n• Combos: dois footswitches pisados juntos executam uma ação à sua escolha,\r\n  em 9 pares disponíveis.\r\n• Layout de tela por preset: cada preset pode ter o seu, sem mexer no global.\r\n• Tamanho da fonte do nome ajustável por footswitch.\r\n• Prévia do editor agora mostra o tile exatamente como sai no display.\r\n• Anel único no STOMP: os 3 LEDs acendem juntos na cor da última seção usada.\r\n• Pedal de expressão por preset: cada preset pode mandar o pedal para um\r\n  comando diferente.\r\n• Card DISPARO MIDI: dispara um CC ou PC na mão para descobrir a que o seu\r\n  processador responde.\r\n• Backup por banco: salva ou restaura os 6 presets de uma letra, com as\r\n  imagens e ícones que ela usa.\r\n• Valores de ligado/desligado ajustáveis por canal.\r\n• Correções de estabilidade e ajustes visuais no editor."
+    },
+    "s2": {
+      "version": "14.0",
+      "file": "bin_S2/firmware.bin",
+      "size": 1980656,
+      "sha256": "ccf158fa4229de3bfcd125511b72b133725d497cd6ce63c97695f6b30893eb2a",
+      "built": "2026-09-19T20:27:38.000Z",
+      "flash": [
+        {
+          "file": "bin_S2/bootloader.bin",
+          "address": 4096,
+          "size": 21008,
+          "sha256": "9d9e215689ee68b8b859f724b842cf1966e58df6f791a30395b64886b95a27f1"
+        },
+        {
+          "file": "bin_S2/partitions.bin",
+          "address": 32768,
+          "size": 3072,
+          "sha256": "d9a882d96e959148c5f5132b954ed72d634be081dcac3a59e687f9cc4727d93b"
+        },
+        {
+          "file": "bin_S2/firmware.bin",
+          "address": 65536,
+          "size": 1980656,
+          "sha256": "ccf158fa4229de3bfcd125511b72b133725d497cd6ce63c97695f6b30893eb2a"
+        },
+        {
+          "file": "bin_S2/littlefs.bin",
+          "address": 2621440,
+          "size": 1572864,
+          "sha256": "454b2b2791473dbbc43cf4400f61e4edbc23c870306bcb93a39239a73f902ad9"
+        }
+      ],
+      "notes": "v13.3 — Novidades da linha 13\r\n• Backup automático na atualização: ao gravar pelo cabo, seus presets,\r\n  imagens, ícones e aparelhos personalizados são salvos antes e devolvidos\r\n  ao pedal depois.\r\n• Assistente de Configuração: monta um preset inteiro passo a passo, sem\r\n  precisar entender MIDI.\r\n• Novo comportamento STEPS: cada toque avança um passo de uma sequência,\r\n  com figura rítmica por passo e opção de seguir o TAP TEMPO ou um BPM fixo.\r\n• Novo comportamento CONTROL: um toque alterna entre FX 1 e FX 2 — quem\r\n  entra liga, quem sai desliga.\r\n• Chamada de presets configurável: você escolhe o que cada footswitch faz\r\n  no toque curto e no toque longo (chamar preset, trocar banco, entrar em\r\n  LIVE e mais).\r\n• Combos: dois footswitches pisados juntos executam uma ação à sua escolha,\r\n  em 9 pares disponíveis.\r\n• Layout de tela por preset: cada preset pode ter o seu, sem mexer no global.\r\n• Tamanho da fonte do nome ajustável por footswitch.\r\n• Prévia do editor agora mostra o tile exatamente como sai no display.\r\n• Anel único no STOMP: os 3 LEDs acendem juntos na cor da última seção usada.\r\n• Pedal de expressão por preset: cada preset pode mandar o pedal para um\r\n  comando diferente.\r\n• Card DISPARO MIDI: dispara um CC ou PC na mão para descobrir a que o seu\r\n  processador responde.\r\n• Backup por banco: salva ou restaura os 6 presets de uma letra, com as\r\n  imagens e ícones que ela usa.\r\n• Valores de ligado/desligado ajustáveis por canal.\r\n• Correções de estabilidade e ajustes visuais no editor."
+    }
+  },
+  "webapp": {
+    "version": "14.0",
+    "build": "14.0+4574bc544ab1",
+    "files": [
+      {
+        "path": "/app.css.gz",
+        "url": "data/app.css.gz",
+        "size": 75318,
+        "sha256": "40005be67ecdf113f662c30b698091ff34bd203daa4fce3740279c06b2f5a277"
+      },
+      {
+        "path": "/app.js.gz",
+        "url": "data/app.js.gz",
+        "size": 241613,
+        "sha256": "4abb383d07b9f1067889a91f0a49bd894bd2a61cc45922f1798f8dcb30d81277"
+      },
+      {
+        "path": "/icons/app-192.png",
+        "url": "data/icons/app-192.png",
+        "size": 19440,
+        "sha256": "6cbb4bbe2f498ee5107de4549925845cb82ce98c0d648b518fbade9a40060642"
+      },
+      {
+        "path": "/icons/app-512.png",
+        "url": "data/icons/app-512.png",
+        "size": 116921,
+        "sha256": "0855c5038c726e7d8be71593dc5a5efab6db923734b627af3ed0ec5c23468991"
+      },
+      {
+        "path": "/icons/app.svg",
+        "url": "data/icons/app.svg",
+        "size": 913,
+        "sha256": "30e927e92ed32ae273c2435c6ae262461960661bda0ce28ca5d33a79ffe2ce5f"
+      },
+      {
+        "path": "/icons/sw/ICO1.png",
+        "url": "data/icons/sw/ICO1.png",
+        "size": 2501,
+        "sha256": "c05dd1267b61a0bfb6d2d65acf4df83b247cd55cece13e1f69718fbda54aa84c"
+      },
+      {
+        "path": "/icons/sw/ICO10.png",
+        "url": "data/icons/sw/ICO10.png",
+        "size": 4358,
+        "sha256": "237d0f3d845ac5291f158e07c9234d31518a5b8a3374281407d9b49dd95e6585"
+      },
+      {
+        "path": "/icons/sw/ICO11.png",
+        "url": "data/icons/sw/ICO11.png",
+        "size": 2650,
+        "sha256": "5e788f6b0f47e31b1f41478209f7a74989e63dd5610c1d2460bf7110f4a4de3e"
+      },
+      {
+        "path": "/icons/sw/ICO12.png",
+        "url": "data/icons/sw/ICO12.png",
+        "size": 4854,
+        "sha256": "bf3b91f684d82fb1988802514d7e1f78cbbe1b238b3212166b53c8d87d9d5975"
+      },
+      {
+        "path": "/icons/sw/ICO13.png",
+        "url": "data/icons/sw/ICO13.png",
+        "size": 4721,
+        "sha256": "90db8f40babcd9766c4325f2cb0ee86709f652ced92c23ba11cfee7668792898"
+      },
+      {
+        "path": "/icons/sw/ICO14.png",
+        "url": "data/icons/sw/ICO14.png",
+        "size": 2112,
+        "sha256": "74c9b70cc2527b564d2dc4133627e55bb01bc00841ab6b6f2b368af97b7a1ce3"
+      },
+      {
+        "path": "/icons/sw/ICO15.png",
+        "url": "data/icons/sw/ICO15.png",
+        "size": 2900,
+        "sha256": "1a9bad9273afb8049f034614af81869d2e95d0b2d1f55c07b615a74c1d7d9499"
+      },
+      {
+        "path": "/icons/sw/ICO16.png",
+        "url": "data/icons/sw/ICO16.png",
+        "size": 4598,
+        "sha256": "76b3cf8181bc9ec5533faffecddf6a6fd724e5f4a9b6a0f04de53d7608b4586d"
+      },
+      {
+        "path": "/icons/sw/ICO17.png",
+        "url": "data/icons/sw/ICO17.png",
+        "size": 3174,
+        "sha256": "ec9171f11a9c9e9001c0153e30b9866dc2289a50c81828a7efd09dfcb6d6f41a"
+      },
+      {
+        "path": "/icons/sw/ICO18.png",
+        "url": "data/icons/sw/ICO18.png",
+        "size": 991,
+        "sha256": "ffd1d875621048bd85163b6dd3e4a00ce2f36cddf3995dba5d83d085a3732ff4"
+      },
+      {
+        "path": "/icons/sw/ICO19.png",
+        "url": "data/icons/sw/ICO19.png",
+        "size": 4298,
+        "sha256": "a01d4cbaf35fdf808de8250c8eaac62dd1a3e476ce8f6e6ebad1ab68656a418a"
+      },
+      {
+        "path": "/icons/sw/ICO2.png",
+        "url": "data/icons/sw/ICO2.png",
+        "size": 2282,
+        "sha256": "a2cbd1668baf9001d08d222f21f5b8cbc91eaecbd51bcb583cfdb539010c161e"
+      },
+      {
+        "path": "/icons/sw/ICO20.png",
+        "url": "data/icons/sw/ICO20.png",
+        "size": 4265,
+        "sha256": "bdc62286f2c070f0a79ad464d5e738460690b53b25a485f7613c085487735cbc"
+      },
+      {
+        "path": "/icons/sw/ICO21.png",
+        "url": "data/icons/sw/ICO21.png",
+        "size": 3231,
+        "sha256": "5fefd4734b834da96be09e20ec951be0e32a8decbd154a575984d2b10d0e86e9"
+      },
+      {
+        "path": "/icons/sw/ICO22.png",
+        "url": "data/icons/sw/ICO22.png",
+        "size": 3068,
+        "sha256": "0eba4c5c4e202622a3e7bd47d16708ca77f250cf72766d62213b4793a31fb811"
+      },
+      {
+        "path": "/icons/sw/ICO23.png",
+        "url": "data/icons/sw/ICO23.png",
+        "size": 4720,
+        "sha256": "148174e205b6f773f1e332d3dfbe5a74d605445fd0687b1d097dae5ef5f451b2"
+      },
+      {
+        "path": "/icons/sw/ICO24.png",
+        "url": "data/icons/sw/ICO24.png",
+        "size": 2166,
+        "sha256": "f1fa1487c000a4abbfeb078d2141c67fd5f3bd3a12da0ca3e16be33d2db40094"
+      },
+      {
+        "path": "/icons/sw/ICO25.png",
+        "url": "data/icons/sw/ICO25.png",
+        "size": 2174,
+        "sha256": "2c9e77cac0f25e63abcaae5a0c83530f1c8bb6ed7f4b07297820e2eafeb7e9eb"
+      },
+      {
+        "path": "/icons/sw/ICO26.png",
+        "url": "data/icons/sw/ICO26.png",
+        "size": 4753,
+        "sha256": "536596d9df66a54d424ef43086e3e86bede2726dd0c17c9a9904bf8e2b548047"
+      },
+      {
+        "path": "/icons/sw/ICO27.png",
+        "url": "data/icons/sw/ICO27.png",
+        "size": 1530,
+        "sha256": "db12e895379c865d2e483fc9a46b37da2dfe7e75d81049c712664364816e0b94"
+      },
+      {
+        "path": "/icons/sw/ICO28.png",
+        "url": "data/icons/sw/ICO28.png",
+        "size": 2827,
+        "sha256": "808ed10d682d423e70d198483227e4b5b42650e18bc0a611c03e5b2824895cbd"
+      },
+      {
+        "path": "/icons/sw/ICO29.png",
+        "url": "data/icons/sw/ICO29.png",
+        "size": 3298,
+        "sha256": "fbd8d46c509d7326939ac2bdd42d43ce8e2aaeffe9315174233f37b6ce2efb94"
+      },
+      {
+        "path": "/icons/sw/ICO3.png",
+        "url": "data/icons/sw/ICO3.png",
+        "size": 2495,
+        "sha256": "be3c105b37ee89f1e10ecb023294a7fc294a92f1f66db329b2c5297dd1c3ab75"
+      },
+      {
+        "path": "/icons/sw/ICO30.png",
+        "url": "data/icons/sw/ICO30.png",
+        "size": 3455,
+        "sha256": "601b2d4b4ed954f5d61b2b7ac1eafbec33cccaa6b5392e652d0328b271d56202"
+      },
+      {
+        "path": "/icons/sw/ICO31.png",
+        "url": "data/icons/sw/ICO31.png",
+        "size": 5608,
+        "sha256": "478b5b460a112bf7d441dec9f945b4038349a2d5ba524db041fa4f47fcc775c3"
+      },
+      {
+        "path": "/icons/sw/ICO32.png",
+        "url": "data/icons/sw/ICO32.png",
+        "size": 4241,
+        "sha256": "028bc346d30655f06ad0cc75e01996e0d3b3185a69a0d12668153f77e1881ae0"
+      },
+      {
+        "path": "/icons/sw/ICO33.png",
+        "url": "data/icons/sw/ICO33.png",
+        "size": 3646,
+        "sha256": "3bd025f5bdeb1bd5354ed785c7953cd6e151ec3730b409b62d866209fc6a3f61"
+      },
+      {
+        "path": "/icons/sw/ICO34.png",
+        "url": "data/icons/sw/ICO34.png",
+        "size": 4035,
+        "sha256": "ed0781cf8bb3b9bbd865a3b307bbe68a765dbf5dff839ad230c1b6498d5923ca"
+      },
+      {
+        "path": "/icons/sw/ICO35.png",
+        "url": "data/icons/sw/ICO35.png",
+        "size": 6339,
+        "sha256": "ee53bf065b74e713ebda6a5755556e76ef82babce374bcbd4142e93ab19f5a05"
+      },
+      {
+        "path": "/icons/sw/ICO36.png",
+        "url": "data/icons/sw/ICO36.png",
+        "size": 6281,
+        "sha256": "6334085c3ddd9af9536a07690de33d05b12503146f72e0140a5d9812a2f2bcc1"
+      },
+      {
+        "path": "/icons/sw/ICO37.png",
+        "url": "data/icons/sw/ICO37.png",
+        "size": 3201,
+        "sha256": "e50e358051ab98ae61f7eadfb9a0e0850e5601c9cb21c70fba528996a3a2ce87"
+      },
+      {
+        "path": "/icons/sw/ICO38.png",
+        "url": "data/icons/sw/ICO38.png",
+        "size": 5035,
+        "sha256": "6005bf41786d750920c7dc3b87525bec0e32d11df9dad624b5470ec58690e112"
+      },
+      {
+        "path": "/icons/sw/ICO39.png",
+        "url": "data/icons/sw/ICO39.png",
+        "size": 4167,
+        "sha256": "ab84b1ccb4446fae5c415a2894c17cbfed16305080e9c37585f1adbb83684a19"
+      },
+      {
+        "path": "/icons/sw/ICO4.png",
+        "url": "data/icons/sw/ICO4.png",
+        "size": 4975,
+        "sha256": "40d164e5d099dbe095bb9eefed5a06eea2534685e90f33e712906f50749f6a0b"
+      },
+      {
+        "path": "/icons/sw/ICO40.png",
+        "url": "data/icons/sw/ICO40.png",
+        "size": 3141,
+        "sha256": "cb73dfd6e695afc130f5ffa5128d6e7dca923215132a6a61b7d726512563af0e"
+      },
+      {
+        "path": "/icons/sw/ICO41.png",
+        "url": "data/icons/sw/ICO41.png",
+        "size": 3595,
+        "sha256": "67a5f6ab9132749e4ba09bcd2d574d5e033e31aacf114b1ee62b1415ae4f03cd"
+      },
+      {
+        "path": "/icons/sw/ICO42.png",
+        "url": "data/icons/sw/ICO42.png",
+        "size": 3504,
+        "sha256": "05610a8ba9339880df362d0adfe9af0528bdf58f52cf39e7ba487c0995cbd207"
+      },
+      {
+        "path": "/icons/sw/ICO43.png",
+        "url": "data/icons/sw/ICO43.png",
+        "size": 1733,
+        "sha256": "1467c9142b755487b8cfdcf13a697e3ff9d7b6bcc281193bed7c02733e7bc70b"
+      },
+      {
+        "path": "/icons/sw/ICO44.png",
+        "url": "data/icons/sw/ICO44.png",
+        "size": 4250,
+        "sha256": "937d2516c6ae87eb4e29f71360ffd1974eb4363a260a5ec6c6d19b909348c012"
+      },
+      {
+        "path": "/icons/sw/ICO45.png",
+        "url": "data/icons/sw/ICO45.png",
+        "size": 4545,
+        "sha256": "1367cb13e6374875ea51dcf086544bdf389515197464f8ec7a1fffc8c8c3bfe2"
+      },
+      {
+        "path": "/icons/sw/ICO46.png",
+        "url": "data/icons/sw/ICO46.png",
+        "size": 6193,
+        "sha256": "987f00c565b73129436c14cbf61bd9bc83a351b42bf880ed69531f927cfa3221"
+      },
+      {
+        "path": "/icons/sw/ICO47.png",
+        "url": "data/icons/sw/ICO47.png",
+        "size": 2911,
+        "sha256": "1c1a9a952f37c208f36a851b9b971a48687004266b31d1f36b8e53252d128317"
+      },
+      {
+        "path": "/icons/sw/ICO48.png",
+        "url": "data/icons/sw/ICO48.png",
+        "size": 2130,
+        "sha256": "4c02f1047e627df83be6a87ddbe5e5bb9474b357ce63906e5a6675b5a8b3b6c5"
+      },
+      {
+        "path": "/icons/sw/ICO49.png",
+        "url": "data/icons/sw/ICO49.png",
+        "size": 4616,
+        "sha256": "976a9d570de47ed2efca0d35e4d356488f5c0f7996858b3320fc53a629b5e0a0"
+      },
+      {
+        "path": "/icons/sw/ICO5.png",
+        "url": "data/icons/sw/ICO5.png",
+        "size": 2333,
+        "sha256": "e23e46487de01efdac6d7553aa8465509d925e6c5d52e1e7ad3535a7d0d72226"
+      },
+      {
+        "path": "/icons/sw/ICO50.png",
+        "url": "data/icons/sw/ICO50.png",
+        "size": 3656,
+        "sha256": "4da9e7bab2ca3cee8ea394f9bd22226a8de47a9cc3f4dc33bd33cd6ea1bd3087"
+      },
+      {
+        "path": "/icons/sw/ICO51.png",
+        "url": "data/icons/sw/ICO51.png",
+        "size": 3940,
+        "sha256": "ed159f24990740a0f4eb9517328dfaff931475469c5ab77548c7918c88a90765"
+      },
+      {
+        "path": "/icons/sw/ICO6.png",
+        "url": "data/icons/sw/ICO6.png",
+        "size": 3329,
+        "sha256": "f9052539a9b332ca91fb1a1d28f5e7e101265e45efcd1d0da82572293278f96f"
+      },
+      {
+        "path": "/icons/sw/ICO7.png",
+        "url": "data/icons/sw/ICO7.png",
+        "size": 1203,
+        "sha256": "d3498919dad9514c0d3dfac74682e20ba71d9b2eb4848d5c513b94ec171b3de1"
+      },
+      {
+        "path": "/icons/sw/ICO8.png",
+        "url": "data/icons/sw/ICO8.png",
+        "size": 2198,
+        "sha256": "c107239df98e11305aed852b14cb412ae2a85ce39d6eadd540ac3515108bc77b"
+      },
+      {
+        "path": "/icons/sw/ICO9.png",
+        "url": "data/icons/sw/ICO9.png",
+        "size": 3226,
+        "sha256": "8676a29b846ac00e3d8aba36781762d2fb3b4c67300177ce2a849c90c22f707d"
+      },
+      {
+        "path": "/icons/sw-modes/sw-mode-banner.jpg",
+        "url": "data/icons/sw-modes/sw-mode-banner.jpg",
+        "size": 32280,
+        "sha256": "0a9fa9974f6271f139237f9cfcd726475dd68bec67614d4bd5c7a52db2734f24"
+      },
+      {
+        "path": "/index.html",
+        "url": "data/index.html",
+        "size": 988,
+        "sha256": "2598f2a980b11b4827ad8c57211beb8d392ebc257a982174515f09c347676742"
+      },
+      {
+        "path": "/manifest.webmanifest",
+        "url": "data/manifest.webmanifest",
+        "size": 1091,
+        "sha256": "a2259d83416cc916af5746604626971f4950061a89afe3ef4ab108251454e2d0"
+      },
+      {
+        "path": "/sw.js",
+        "url": "data/sw.js",
+        "size": 3079,
+        "sha256": "379f4fb939eb81740fb0ff6f9d4791446db9a61334d25204436cf76c563e9e96"
+      },
+      {
+        "path": "/webapp_version.txt",
+        "url": "data/webapp_version.txt",
+        "size": 17,
+        "sha256": "38821e052477511ef3e779472f92b34d39aad115cdbe64779feb60b7b57847bb"
+      }
+    ]
+  }
+}
