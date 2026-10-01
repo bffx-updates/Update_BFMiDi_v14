@@ -1,0 +1,11 @@
+BFMIDI PROJECT ZERO - binarios de producao ESP32-S3 (flash 16 MB)
+
+Tabela OTA: ota_0 0x10000/3.5 MB, ota_1 0x390000/3.5 MB,
+            otadata 0x710000/8 KB, storage 0x720000/5 MB.
+
+esptool --chip esp32s3 write_flash offsets:
+  0x0       bootloader.bin
+  0x8000    partitions.bin
+  0x10000   firmware.bin    (= ota_0)
+  0x710000  otadata.bin     (boot na ota_0)
+  0x720000  littlefs.bin

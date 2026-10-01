@@ -1,0 +1,69 @@
+========================================================
+  BFMiDi - ATUALIZACAO OFFLINE (Windows)
+========================================================
+
+Este pacote atualiza o seu BFMiDi sem precisar do site,
+sem internet e sem instalar nada no computador.
+
+
+COMO USAR
+---------
+
+1. Descompacte ESTA PASTA INTEIRA em algum lugar do PC
+   (ex.: a Area de Trabalho). Nao rode de dentro do ZIP.
+
+2. Feche o editor BFMiDi (aba do navegador / aplicativo),
+   o Arduino IDE e qualquer monitor serial aberto.
+
+3. Ligue o pedal no PC com um cabo USB de DADOS.
+   Cabo so de carga nao serve: o PC precisa "ver" o pedal.
+
+4. Se quiser guardar seus presets, faca um BACKUP pelo
+   editor antes (SYSTEM > MANUTENCAO > Backup).
+
+5. De dois cliques em:   ATUALIZAR BFMIDI.bat
+
+6. Siga o que aparecer na tela. Quando terminar, o pedal
+   reinicia sozinho.
+
+A atualizacao regrava o firmware E o editor de tela - o
+mesmo que o site faz. Por isso os presets voltam ao padrao
+de fabrica: restaure o seu backup pelo editor depois
+(SYSTEM > MANUTENCAO).
+
+
+SE DER ERRO
+-----------
+
+* "Nao encontrei nenhum pedal BFMiDi na USB"
+  - troque o cabo por um de DADOS
+  - use outra porta USB (de preferencia atras do gabinete)
+  - desligue e ligue o pedal
+
+* "A gravacao falhou"
+  - confira se o editor / Arduino IDE / monitor serial
+    estao mesmo fechados
+  - coloque o pedal em modo gravacao na mao:
+    SEGURE o botao BOOT, toque no RESET, SOLTE o BOOT.
+    Depois responda "S" quando o script perguntar se voce
+    fez o boot manual.
+
+* O antivirus reclamou do esptool.exe
+  E falso positivo: o esptool e a ferramenta oficial da
+  Espressif para gravar chips ESP32, e vem empacotada
+  aqui apenas para funcionar sem instalar Python.
+
+Se nada resolver, tire um print da janela preta e mande
+para o suporte BFMiDi.
+
+
+O QUE TEM AQUI DENTRO
+---------------------
+
+  ATUALIZAR BFMIDI.bat   o instalador (e o que voce roda)
+  tools\esptool.exe      gravador oficial Espressif
+  tools\detect_pedal.ps1 acha a porta COM do pedal
+  bin\                   o firmware e o editor de tela
+
+Serve para toda a linha BFMiDi (1, 2 e 3). Nao precisa
+escolher modelo: o script acha o pedal sozinho.
