@@ -1,0 +1,7 @@
+BFMIDI PROJECT ZERO - binarios de producao ESP32-S2 (flash 4 MB)
+
+esptool --chip esp32s2 write_flash offsets:
+  0x1000    bootloader.bin
+  0x8000    partitions.bin
+  0x10000   firmware.bin
+  0x280000  littlefs.bin

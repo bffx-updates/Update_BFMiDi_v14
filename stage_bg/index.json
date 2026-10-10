@@ -1,0 +1,53 @@
+{
+ "v": 1,
+ "items": [
+  {
+   "file": "aco.jpg",
+   "pt": "Aço escovado",
+   "en": "Brushed steel",
+   "es": "Acero cepillado"
+  },
+  {
+   "file": "bokeh.jpg",
+   "pt": "Luzes",
+   "en": "Bokeh",
+   "es": "Luces"
+  },
+  {
+   "file": "fumaca.jpg",
+   "pt": "Fumaça",
+   "en": "Smoke",
+   "es": "Humo"
+  },
+  {
+   "file": "galaxia.jpg",
+   "pt": "Galáxia",
+   "en": "Galaxy",
+   "es": "Galaxia"
+  },
+  {
+   "file": "holofotes.jpg",
+   "pt": "Holofotes",
+   "en": "Spotlights",
+   "es": "Reflectores"
+  },
+  {
+   "file": "neon.jpg",
+   "pt": "Neon",
+   "en": "Neon",
+   "es": "Neón"
+  },
+  {
+   "file": "por-do-sol.jpg",
+   "pt": "Pôr do sol",
+   "en": "Sunset",
+   "es": "Atardecer"
+  },
+  {
+   "file": "tablado.jpg",
+   "pt": "Tablado",
+   "en": "Stage floor",
+   "es": "Tarima"
+  }
+ ]
+}
