@@ -1,0 +1,114 @@
+{
+  "v": 1,
+  "sets": {
+    "modern": {
+      "knobs": {
+        "round": {
+          "cap": "modern/knob-cap.webp",
+          "base": "modern/knob-base.webp",
+          "scale": 0.68
+        },
+        "chicken": {
+          "cap": "modern/knob-chicken.webp",
+          "base": "modern/knob-base.webp",
+          "scale": 0.71
+        }
+      },
+      "switch": {
+        "on": "modern/switch-on.webp",
+        "off": "modern/switch-off.webp"
+      },
+      "blocks": {
+        "comp": "modern/blk/comp.webp",
+        "dist": "modern/blk/dist.webp",
+        "dly": "modern/blk/delay.webp",
+        "eq": "modern/blk/eq.webp",
+        "gate": "modern/blk/gate.webp",
+        "k-boost": "modern/blk/boost.webp",
+        "k-input": "modern/blk/input.webp",
+        "k-loop": "modern/blk/loop.webp",
+        "mod": "modern/blk/mod.webp",
+        "ns": "modern/blk/gate.webp",
+        "pre": "modern/blk/boost.webp",
+        "rvb": "modern/blk/reverb.webp",
+        "vol": "modern/blk/vol.webp",
+        "wah": "modern/blk/wah.webp"
+      },
+      "panels": {
+        "knobs": {
+          "src": "modern/panel-knobs.webp",
+          "ink": "light"
+        },
+        "chain": {
+          "src": "modern/panel-chain.webp",
+          "ink": "light"
+        },
+        "head": {
+          "src": "modern/panel-head.webp",
+          "ink": "light"
+        },
+        "screw": "modern/screw.webp"
+      }
+    },
+    "classic": {
+      "knobs": {
+        "round": {
+          "cap": "classic/knob-cap.webp",
+          "base": "classic/knob-base.webp",
+          "scale": 0.59
+        },
+        "chicken": {
+          "cap": "classic/knob-chicken.webp",
+          "base": "classic/knob-base.webp",
+          "scale": 0.74
+        }
+      },
+      "switch": {
+        "on": "classic/switch-on.webp",
+        "off": "classic/switch-off.webp"
+      },
+      "blocks": {
+        "comp": "classic/blk/comp.webp",
+        "dist": "classic/blk/dist.webp",
+        "dly": "classic/blk/delay.webp",
+        "eq": "classic/blk/eq.webp",
+        "gate": "classic/blk/gate.webp",
+        "k-boost": "classic/blk/boost.webp",
+        "k-input": "classic/blk/input.webp",
+        "k-loop": "classic/blk/loop.webp",
+        "mod": "classic/blk/mod.webp",
+        "ns": "classic/blk/gate.webp",
+        "pre": "classic/blk/boost.webp",
+        "rvb": "classic/blk/reverb.webp",
+        "vol": "classic/blk/vol.webp",
+        "wah": "classic/blk/wah.webp"
+      },
+      "panels": {
+        "knobs": {
+          "src": "classic/panel-plate.webp",
+          "ink": "dark",
+          "cut": 69.8,
+          "round": 0.44,
+          "srcV": "classic/panel-plate-v.webp",
+          "cutV": 49.8
+        },
+        "chain": {
+          "src": "classic/panel-plate.webp",
+          "ink": "dark",
+          "cut": 69.8,
+          "round": 0.44,
+          "srcV": "classic/panel-plate-v.webp",
+          "cutV": 49.8
+        },
+        "head": {
+          "src": "classic/panel-plate.webp",
+          "ink": "dark",
+          "cut": 69.8,
+          "round": 0.44,
+          "srcV": "classic/panel-plate-v.webp",
+          "cutV": 49.8
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "version": "14.9",
+  "generated": "2026-10-15T13:18:18.781Z",
+  "fw": {
+    "s3": {
+      "version": "14.9",
+      "file": "bin_S3/firmware.bin",
+      "size": 2095376,
+      "sha256": "10bc76c15cf819def9941a44c34896ddece578c24e0c29bb2ed55a4156fb9fe7",
+      "built": "2026-10-15T12:57:19.208Z",
+      "flash": [
+        {
+          "file": "bin_S3/bootloader.bin",
+          "address": 0,
+          "size": 19984,
+          "sha256": "b41be55ae9a52aeeb21645c51b86c14027f84c2c91bf67bee6aa0e1b15d18e8b"
+        },
+        {
+          "file": "bin_S3/partitions.bin",
+          "address": 32768,
+          "size": 3072,
+          "sha256": "121d99567600bfb4e6b0f57f779838a4d77f2357a7ece5fd0288b04f2b9501ab"
+        },
+        {
+          "file": "bin_S3/firmware.bin",
+          "address": 65536,
+          "size": 2095376,
+          "sha256": "10bc76c15cf819def9941a44c34896ddece578c24e0c29bb2ed55a4156fb9fe7"
+        },
+        {
+          "file": "bin_S3/otadata.bin",
+          "address": 7405568,
+          "size": 8192,
+          "sha256": "f94c5d786a7a8fab06ac5d10e33bf37711a6697636dc037559ea19cc410a17f0"
+        },
+        {
+          "file": "bin_S3/littlefs.bin",
+          "address": 7471104,
+          "size": 5242880,
+          "sha256": "b26f28d0588c3ae535ab45011cf18b299f5e0ad5f7d4ed2541a4ea1e8c9e2575"
+        }
+      ],
+      "notes": "v14.1 — Novidades\r\n• Pedal de expressão com faixa de saída: escolha, em porcentagem, o valor\r\n  que o pedal manda recolhido (MÍN) e na ponta (MÁX). Ex.: MÍN em 50% faz o\r\n  pedal recolhido mandar 64. MÍN maior que o MÁX inverte o sentido.\r\n  Em GLOBAL › CONTROLES › Expressão Externa.\r\n• Novo card TEMPOS DE DISPARO, em SYSTEM › HARDWARE:\r\n  – Pausa entre HEADER e LIVE: espera extra entre o PC do preset e o MIDI\r\n    dos footswitches do modo LIVE, para aparelhos que perdem os primeiros\r\n    comandos enquanto carregam o preset. Soma com a espera que já existe.\r\n  – Pausa por canal: intervalo mínimo entre todas as mensagens enviadas\r\n    para um canal escolhido (ex.: 100 ms no canal 2).\r\n• LED apagado mais fácil de ver no editor: o anel aparece vazado na cor\r\n  escolhida, em vez de escurecido."
+    },
+    "s2": {
+      "version": "14.9",
+      "file": "bin_S2/firmware.bin",
+      "size": 2050464,
+      "sha256": "44335cb62c79ac94fb7ce10f6bccdf95e06732c364f8de8a4a1cbf44d9e71094",
+      "built": "2026-10-15T12:57:19.097Z",
+      "flash": [
+        {
+          "file": "bin_S2/bootloader.bin",
+          "address": 4096,
+          "size": 21008,
+          "sha256": "9d9e215689ee68b8b859f724b842cf1966e58df6f791a30395b64886b95a27f1"
+        },
+        {
+          "file": "bin_S2/partitions.bin",
+          "address": 32768,
+          "size": 3072,
+          "sha256": "d9a882d96e959148c5f5132b954ed72d634be081dcac3a59e687f9cc4727d93b"
+        },
+        {
+          "file": "bin_S2/firmware.bin",
+          "address": 65536,
+          "size": 2050464,
+          "sha256": "44335cb62c79ac94fb7ce10f6bccdf95e06732c364f8de8a4a1cbf44d9e71094"
+        },
+        {
+          "file": "bin_S2/littlefs.bin",
+          "address": 2621440,
+          "size": 1572864,
+          "sha256": "41fb1be52ec8f975ff64beb2ebbf0976f330bb1616c0a6903d2ab5047bfb735f"
+        }
+      ],
+      "notes": "v14.1 — Novidades\r\n• Pedal de expressão com faixa de saída: escolha, em porcentagem, o valor\r\n  que o pedal manda recolhido (MÍN) e na ponta (MÁX). Ex.: MÍN em 50% faz o\r\n  pedal recolhido mandar 64. MÍN maior que o MÁX inverte o sentido.\r\n  Em GLOBAL › CONTROLES › Expressão Externa.\r\n• Novo card TEMPOS DE DISPARO, em SYSTEM › HARDWARE:\r\n  – Pausa entre HEADER e LIVE: espera extra entre o PC do preset e o MIDI\r\n    dos footswitches do modo LIVE, para aparelhos que perdem os primeiros\r\n    comandos enquanto carregam o preset. Soma com a espera que já existe.\r\n  – Pausa por canal: intervalo mínimo entre todas as mensagens enviadas\r\n    para um canal escolhido (ex.: 100 ms no canal 2).\r\n• LED apagado mais fácil de ver no editor: o anel aparece vazado na cor\r\n  escolhida, em vez de escurecido."
+    }
+  },
+  "webapp": {
+    "version": "14.9",
+    "build": "14.9+e172c7832b21",
+    "files": [
+      {
+        "path": "/app.css.gz",
+        "url": "data/app.css.gz",
+        "size": 96011,
+        "sha256": "94a06efa1bbd80ea09f9fd7bfd0a4f2e9832f08aa6071c477ac85a8ef559ee1f"
+      },
+      {
+        "path": "/app.js.gz",
+        "url": "data/app.js.gz",
+        "size": 339011,
+        "sha256": "2b226b3314e6985ff8b8735e398907f516e89c636b56a278d6f13a03ea1c6067"
+      },
+      {
+        "path": "/icons/app-192.png",
+        "url": "data/icons/app-192.png",
+        "size": 19440,
+        "sha256": "6cbb4bbe2f498ee5107de4549925845cb82ce98c0d648b518fbade9a40060642"
+      },
+      {
+        "path": "/icons/app.svg",
+        "url": "data/icons/app.svg",
+        "size": 913,
+        "sha256": "30e927e92ed32ae273c2435c6ae262461960661bda0ce28ca5d33a79ffe2ce5f"
+      },
+      {
+        "path": "/icons/sw-modes/sw-mode-banner.jpg",
+        "url": "data/icons/sw-modes/sw-mode-banner.jpg",
+        "size": 32280,
+        "sha256": "0a9fa9974f6271f139237f9cfcd726475dd68bec67614d4bd5c7a52db2734f24"
+      },
+      {
+        "path": "/icons/sw-sheet.png",
+        "url": "data/icons/sw-sheet.png",
+        "size": 87060,
+        "sha256": "754389f1d549eaf3d375ebba60cd58fdf0bc316179417f2597ee8e5f87ef33ea"
+      },
+      {
+        "path": "/index.html",
+        "url": "data/index.html",
+        "size": 988,
+        "sha256": "2598f2a980b11b4827ad8c57211beb8d392ebc257a982174515f09c347676742"
+      },
+      {
+        "path": "/manifest.webmanifest",
+        "url": "data/manifest.webmanifest",
+        "size": 824,
+        "sha256": "2798fc6bdf65605ff9fc422a2b03f2b9dfe7c07c709d9ae080af3ac1a70f921c"
+      },
+      {
+        "path": "/sw.js",
+        "url": "data/sw.js",
+        "size": 3054,
+        "sha256": "4d9554f0c755c0a75e0476c7cda5eda306b09d15989ee9fe31bc524d40f09ff1"
+      },
+      {
+        "path": "/webapp_version.txt",
+        "url": "data/webapp_version.txt",
+        "size": 17,
+        "sha256": "62cbd2ec3a6ec844d22a47c53aa3caf37159d231286029407830dcc20c359edd"
+      }
+    ]
+  }
+}

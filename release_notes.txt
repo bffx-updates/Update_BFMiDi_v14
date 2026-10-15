@@ -1,0 +1,13 @@
+v14.1 — Novidades
+• Pedal de expressão com faixa de saída: escolha, em porcentagem, o valor
+  que o pedal manda recolhido (MÍN) e na ponta (MÁX). Ex.: MÍN em 50% faz o
+  pedal recolhido mandar 64. MÍN maior que o MÁX inverte o sentido.
+  Em GLOBAL › CONTROLES › Expressão Externa.
+• Novo card TEMPOS DE DISPARO, em SYSTEM › HARDWARE:
+  – Pausa entre HEADER e LIVE: espera extra entre o PC do preset e o MIDI
+    dos footswitches do modo LIVE, para aparelhos que perdem os primeiros
+    comandos enquanto carregam o preset. Soma com a espera que já existe.
+  – Pausa por canal: intervalo mínimo entre todas as mensagens enviadas
+    para um canal escolhido (ex.: 100 ms no canal 2).
+• LED apagado mais fácil de ver no editor: o anel aparece vazado na cor
+  escolhida, em vez de escurecido.

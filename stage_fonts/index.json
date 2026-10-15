@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "id": "bigshoulders",
+      "file": "BigShouldersDisplay.woff2",
+      "family": "BF Big Shoulders",
+      "label": "BIG SHOULDERS",
+      "weight": "100 900",
+      "scope": "all",
+      "credit": "Big Shoulders Display (Patric King, Google Fonts), SIL Open Font License 1.1",
+      "license": "OFL-BigShouldersDisplay.txt"
+    },
+    {
+      "id": "dseg14",
+      "file": "DSEG14Classic-Bold.woff2",
+      "family": "BF DSEG14",
+      "label": "LED (DSEG14)",
+      "weight": "700",
+      "scope": "name",
+      "credit": "DSEG14 Classic (keshikan), SIL Open Font License 1.1",
+      "license": "OFL-DSEG.txt"
+    }
+  ]
+}
